@@ -1,5 +1,6 @@
 package eu.su.mas.dedaleEtu.mas.behaviours;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
+import eu.su.mas.dedaleEtu.mas.agents.dummies.SkilledChaseAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 
 import jade.core.behaviours.SimpleBehaviour;
@@ -19,6 +21,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapManager;
+import jade.core.AID;
 
 
 /**
@@ -45,6 +48,7 @@ public class ExploBehaviour extends SimpleBehaviour {
 	 * Current knowledge of the agent regarding the environment
 	 */
 	private MapManager mapManager;
+    private List<String> list_agentNames;
 
     /**
      * 
@@ -52,18 +56,18 @@ public class ExploBehaviour extends SimpleBehaviour {
      * @param mapManager manager of known map of the world the agent is living in
      * @param agentNames name of the agents to share the map with
      */
-    public ExploBehaviour(final AbstractDedaleAgent myagent, MapManager mapManager) {
+    public ExploBehaviour(final AbstractDedaleAgent myagent, MapManager mapManager, List<String> agentNames) {
         super(myagent);
         this.mapManager=mapManager;
+        this.list_agentNames=agentNames;
     }
 
         @Override
         public void action() {
 
-            // if(this.mapManager==null) {
-            // 	this.mapManager= new MapRepresentation();
-            // 	this.myAgent.addBehaviour(new ShareMapBehaviour(this.myAgent,500,this.mapManager,list_agentNames));
-            // }
+             if(this.mapManager==null) {
+             	this.mapManager= ((SkilledChaseAgent)myAgent).getMapManager();
+             }
 
             //0) Retrieve the current position
             Location myPosition=((AbstractDedaleAgent)this.myAgent).getCurrentPosition();
@@ -71,16 +75,19 @@ public class ExploBehaviour extends SimpleBehaviour {
             if (myPosition!=null){
                 //List of observable from the agent's current position
                 List<Couple<Location,List<Couple<Observation,Integer>>>> lobs=((AbstractDedaleAgent)this.myAgent).observe();//myPosition
-                System.out.println(lobs);
+                // System.out.println(lobs);
                 /**
                  * Just added here to let you see what the agent is doing, otherwise he will be too quick
                  */
                 try {
+                    // ((SkilledChaseAgent)this.myAgent).setshouldpause(true);
                     this.myAgent.doWait(1000);
+                    // ((SkilledChaseAgent)this.myAgent).setshouldpause(false);
+                    System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+"WAITED FOR 1s - Position: "+myPosition);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+" - Error in Wait");
                 }
-
                 //1) remove the current node from openlist and add it to closedNodes.
                 this.mapManager.addNode(myPosition.getLocationId(), MapAttribute.closed);
 
@@ -114,7 +121,8 @@ public class ExploBehaviour extends SimpleBehaviour {
                     }else {
                         //System.out.println("nextNode notNUll - "+this.myAgent.getLocalName()+"-- list= "+this.mapManager.getOpenNodes()+"\n -- nextNode: "+nextNode);
                     }
-                    
+                    System.out.println(this.myAgent.getLocalName()+" - Next node is "+nextNodeId);
+                    // System.out.println(this.myAgent.getLocalName()+" - Next node is "+nextNodeId);
                     //5) At each time step, the agent check if he received a graph from a teammate. 	
                     // If it was written properly, this sharing action should be in a dedicated behaviour set.
                     MessageTemplate msgTemplate=MessageTemplate.and(
@@ -122,15 +130,27 @@ public class ExploBehaviour extends SimpleBehaviour {
                             MessageTemplate.MatchPerformative(ACLMessage.INFORM));
                     ACLMessage msgReceived=this.myAgent.receive(msgTemplate);
                     if (msgReceived!=null) {
+                        // System.out.println(this.myAgent.getLocalName()+" - Map received from "+msgReceived.getSender().getLocalName());
                         SerializableSimpleGraph<String, MapAttribute> sgreceived=null;
                         try {
+                            System.out.println(this.myAgent.getLocalName()+" - Content: "+msgReceived.getContentObject());
                             sgreceived = (SerializableSimpleGraph<String, MapAttribute>)msgReceived.getContentObject();
                         } catch (UnreadableException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                        this.mapManager.mergeMap(sgreceived);
+                        this.mapManager.mergeMap(sgreceived, msgReceived.getSender());
                     }
+                    ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+
+                    msg.setProtocol("REQUEST-TOPO");
+
+                    for(String agentName : list_agentNames) {
+                        msg.addReceiver(new AID(agentName, AID.ISLOCALNAME));
+                    }
+
+                    this.myAgent.send(msg);
+                    // // System.out.println(this.myAgent.getLocalName()+" - Map requested to "+list_agentNames);
 
                     ((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNodeId));
                 }

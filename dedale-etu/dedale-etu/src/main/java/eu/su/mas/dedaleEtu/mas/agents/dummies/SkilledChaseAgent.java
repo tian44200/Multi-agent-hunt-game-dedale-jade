@@ -38,6 +38,7 @@ public class SkilledChaseAgent extends AbstractDedaleAgent {
 
 	private static final long serialVersionUID = -7969469610241668140L;
 	private MapManager mapManager;
+	private boolean shouldpause = true;
 	
 
 	/**
@@ -77,12 +78,8 @@ public class SkilledChaseAgent extends AbstractDedaleAgent {
 		 * 
 		 ************************************************/
 		lb.add(new ShareMapFSMBehaviour(this,this.mapManager,list_agentNames));
-		System.out.println("hi I shared");
-		lb.add(new ExploBehaviour(this,this.mapManager));
-
-		
-
-		
+		// System.out.println("hi I shared");
+		lb.add(new ExploBehaviour(this,this.mapManager,list_agentNames));
 		
 		/***
 		 * MANDATORY TO ALLOW YOUR AGENT TO BE DEPLOYED CORRECTLY
@@ -95,6 +92,34 @@ public class SkilledChaseAgent extends AbstractDedaleAgent {
 
 	}
 	
+	protected void beforeMove(){ 
+		super.beforeMove(); 
+		//terminate what is computer-specific
+		if (this.mapManager != null){
+			this.mapManager.prepareMigration();
+		}
+			
+	   }
+
+	protected void afterMove(){ 
+		super.afterMove();
+		//restart what is computer-specific
+		if (this.mapManager != null){
+			this.mapManager.loadSavedData();
+		}
+	}
+	public MapManager getMapManager() {
+		return this.mapManager;
+	}
+	public void setMapManager(MapManager mapManager) {
+		this.mapManager = mapManager;
+	}
 	
-	
+	public boolean shouldpause() { 
+		return this.shouldpause;
+	}
+	public boolean setshouldpause(boolean shouldpause) {
+		this.shouldpause = shouldpause;
+		return this.shouldpause;
+	}
 }
