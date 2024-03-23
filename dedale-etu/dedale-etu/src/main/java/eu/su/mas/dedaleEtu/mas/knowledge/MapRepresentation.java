@@ -24,6 +24,7 @@ import org.graphstream.ui.view.Viewer.CloseFramePolicy;
 import dataStructures.serializableGraph.*;
 import dataStructures.tuple.Couple;
 import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
 
 /**
  * This simple topology representation only deals with the graph, not its content.</br>
@@ -67,8 +68,14 @@ public class MapRepresentation implements Serializable {
 		System.setProperty("org.graphstream.ui", "javafx");
 		this.g= new SingleGraph("My world vision");
 		this.g.setAttribute("ui.stylesheet",nodeStyle);
-		boolean isFxApplicationThread = Platform.isFxApplicationThread();
-		System.out.println("Is FX Application Thread? " + isFxApplicationThread);
+//		Platform.startup(() ->
+//		{
+//		    // This block will be executed on JavaFX Thread
+//			openGui();
+//		});
+//		boolean isFxApplicationThread = Platform.isFxApplicationThread();
+//		System.out.println("Is FX Application Thread? " + isFxApplicationThread);
+//		new JFXPanel();
 		Platform.runLater(() -> {
 			openGui();
 		});

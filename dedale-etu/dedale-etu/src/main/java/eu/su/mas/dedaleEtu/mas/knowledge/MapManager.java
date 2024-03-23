@@ -33,6 +33,8 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import javafx.application.Platform;
 import java.util.Map;
+import jade.core.AID;
+
 
 public class MapManager implements Serializable{
     private static final long serialVersionUID = -1333959882640838272L;
@@ -41,14 +43,13 @@ public class MapManager implements Serializable{
     private Map<String, SerializableSimpleGraph<String, MapAttribute>> subgrapheToShareForAgent;
 
     public MapManager(MapRepresentation myMap, List<String> agents) {
-        this.myMap = myMap;
-        if (this.myMap == null) {
-            this.myMap = new MapRepresentation();
-        }
+    	this.myMap = myMap;
         this.subgrapheToShareForAgent = new HashMap<>();
         for (String agent : agents) {
-            this.subgrapheToShareForAgent.put(agent, new SerializableSimpleGraph<>());
+            AID aid = new AID(agent, AID.ISLOCALNAME);
+            this.subgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
         }
+        System.out.println("Subgraphes created"+this.subgrapheToShareForAgent.toString());
     }
 
     public synchronized MapRepresentation getMyMap() {
@@ -63,6 +64,7 @@ public class MapManager implements Serializable{
         for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
             subgraph.addNode(id, mapAttribute);
         }
+        // System.out.println("Subgraphes added Node"+this.subgrapheToShareForAgent.toString());
     }
 
     public synchronized boolean addNewNode(String id) {
@@ -72,6 +74,7 @@ public class MapManager implements Serializable{
             for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
                 subgraph.addNode(id, MapAttribute.open);
             }
+            // System.out.println("Subgraphes added NewNode"+this.subgrapheToShareForAgent.toString());
         }
         return isNodeAdded;
     }
@@ -82,28 +85,40 @@ public class MapManager implements Serializable{
 
         // Also add this edge in each agent's subgraph
         for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
+            if (subgraph.getNode(node1Id) == null) {
+                subgraph.addNode(node1Id, MapAttribute.open); // Assuming SerializableSimpleGraph has a method to add edges
+            }
+            if (subgraph.getNode(node2Id) == null) {
+                subgraph.addNode(node2Id,MapAttribute.open); // Assuming SerializableSimpleGraph has a method to add edges
+            }
             subgraph.addEdge("", node1Id, node2Id); // Assuming SerializableSimpleGraph has a method to add edges
         }
     }
 
     public synchronized SerializableSimpleGraph<String, MapAttribute> getSerializableSubGraphToShareForAgent(String agentId) {
-        SerializableSimpleGraph<String, MapAttribute> subgraph = this.subgrapheToShareForAgent.get(agentId);
-        if (subgraph == null) {
-            return null; // Or throw an exception
-        }
         // Prepare the subgraph to be shared
-        SerializableSimpleGraph<String, MapAttribute> subgraphToShare = subgraph;
+        SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.subgrapheToShareForAgent.get(agentId);
+        if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
+            return null; 
+        }
         // Reset the agent's subgraph
         this.subgrapheToShareForAgent.put(agentId, new SerializableSimpleGraph<>());
+        // System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+subgraphToShare.toString());
         return subgraphToShare;
     }
     
-    public synchronized void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
+    public synchronized void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived, AID senderID) {
+        // System.out.println("Merging received subgraph"+sgreceived.toString());
         // Merge the received subgraph into each agent's subgraph
         for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
             // Merge nodes
+            if (subgraph.equals(this.subgrapheToShareForAgent.get(senderID.getName()))) {
+                continue;
+            }
             for (SerializableNode<String, MapAttribute> node : sgreceived.getAllNodes()) {
-                subgraph.addNode(node.getNodeId(), node.getNodeContent());
+                if (!(node.getNodeContent() == MapAttribute.open && subgraph.getNode(node.getNodeId()) != null)) {
+                    subgraph.addNode(node.getNodeId(), node.getNodeContent());
+                }
             }
 
             // Merge edges
@@ -116,8 +131,17 @@ public class MapManager implements Serializable{
                 }
             }
         }
-
+        // System.out.println("Merging done"+this.subgrapheToShareForAgent.toString());
+        // System.out.println("Merging done"+this.myMap.toString());
         // Also merge the received subgraph into the main MapRepresentation
         this.myMap.mergeMap(sgreceived);
+    }
+
+    public void prepareMigration(){
+        this.myMap.prepareMigration();
+    }
+
+    public void loadSavedData(){
+        this.myMap.loadSavedData();
     }
 }
