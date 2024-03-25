@@ -5,51 +5,31 @@ import java.util.List;
 import java.util.Map;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
-import org.graphstream.algorithm.Dijkstra;
-import org.graphstream.graph.Edge;
-import org.graphstream.graph.EdgeRejectedException;
-import org.graphstream.graph.ElementNotFoundException;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.IdAlreadyInUseException;
-import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.ui.fx_viewer.FxViewer;
-import org.graphstream.ui.view.Viewer;
-import org.graphstream.ui.view.Viewer.CloseFramePolicy;
+import java.util.Set;
 
 import dataStructures.serializableGraph.*;
-import dataStructures.tuple.Couple;
-import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
-import javafx.application.Platform;
-import java.util.Map;
 import jade.core.AID;
-
+import eu.su.mas.dedaleEtu.mas.knowledge.DynamicObjectInfo.Type;
 
 public class MapManager implements Serializable{
     private static final long serialVersionUID = -1333959882640838272L;
 
     private MapRepresentation myMap;
     private Map<String, SerializableSimpleGraph<String, MapAttribute>> staticSubgrapheToShareForAgent;
-    private Map<String, GraphWithTime> SubgrapheToShareForAgent;
+    private Map<String, DynamicObjectInfo> dynamicObjectsByID;
+    private Map<String, List<DynamicObjectInfo>> dynamicObjectsByType;
 
     public MapManager(MapRepresentation myMap, List<String> agents) {
     	this.myMap = myMap;
         this.staticSubgrapheToShareForAgent = new HashMap<>();
+        this.dynamicObjectsByID = new HashMap<>();
+        this.dynamicObjectsByType = new HashMap<>();
         for (String agent : agents) {
             AID aid = new AID(agent, AID.ISLOCALNAME);
             this.staticSubgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
-            this.staticSubgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
+            this.dynamicObjectsByID.put(aid.getName(), new DynamicObjectInfo(aid.getName(), Type.agent, 0L, null));
         }
         System.out.println("Subgraphes created"+this.staticSubgrapheToShareForAgent.toString());
     }
@@ -97,7 +77,7 @@ public class MapManager implements Serializable{
         }
     }
 
-    public synchronized SerializableSimpleGraph<String, MapAttribute> getStaticSerialSubGraphForAgent(String agentId) {
+    public synchronized SerializableSimpleGraph<String, MapAttribute> getSerialSubGraphForAgent(String agentId) {
         // Prepare the subgraph to be shared
         SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
         if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
@@ -109,16 +89,8 @@ public class MapManager implements Serializable{
         return subgraphToShare;
     }
 
-    public synchronized SerializableSimpleGraph<String, MapAttribute> getDynamicSerialSubGraphForAgent(String agentId) {
-        // Prepare the subgraph to be shared
-        SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
-        if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
-            return null; 
-        }
-        // Reset the agent's subgraph
-        this.staticSubgrapheToShareForAgent.put(agentId, new SerializableSimpleGraph<>());
-        // System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+subgraphToShare.toString());
-        return subgraphToShare;
+    public synchronized Map<String, DynamicObjectInfo> getDynamicInfo() {
+        return this.dynamicObjectsByID;
     }
     
     public synchronized void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived, AID senderID) {

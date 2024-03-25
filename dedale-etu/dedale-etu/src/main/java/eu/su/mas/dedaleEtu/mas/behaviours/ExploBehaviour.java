@@ -13,7 +13,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.SkilledChaseAgent;
+import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 
 import jade.core.behaviours.SimpleBehaviour;
@@ -66,7 +66,7 @@ public class ExploBehaviour extends SimpleBehaviour {
         public void action() {
 
              if(this.mapManager==null) {
-             	this.mapManager= ((SkilledChaseAgent)myAgent).getMapManager();
+             	this.mapManager= ((HuntAgent)myAgent).getMapManager();
              }
 
             //0) Retrieve the current position

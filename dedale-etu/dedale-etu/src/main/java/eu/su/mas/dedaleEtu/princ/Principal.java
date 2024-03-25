@@ -7,7 +7,7 @@ import java.util.List;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyCollectorAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyMovingAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.DummyTankerAgent;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.SkilledChaseAgent;
+import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.explo.ExploreCoopAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.explo.ExploreSoloAgent;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
@@ -402,7 +402,7 @@ public class Principal {
 				Object [] entityParametersExplo4={"Explo2"};
 		
 				//4) Give the class name of your agent to let the system instantiate it
-				ag=createNewDedaleAgent(c, agentName, SkilledChaseAgent.class.getName(), entityParametersExplo4);//ExploreSoloAgent
+				ag=createNewDedaleAgent(c, agentName, HuntAgent.class.getName(), entityParametersExplo4);//ExploreSoloAgent
 		
 				agentList.add(ag);
 
@@ -420,7 +420,7 @@ public class Principal {
 				Object [] entityParametersExplo5={"Explo1"};
 		
 				//4) Give the class name of your agent to let the system instantiate it
-				ag=createNewDedaleAgent(c, agentName, SkilledChaseAgent.class.getName(), entityParametersExplo5);//ExploreSoloAgent
+				ag=createNewDedaleAgent(c, agentName, HuntAgent.class.getName(), entityParametersExplo5);//ExploreSoloAgent
 		
 				agentList.add(ag);
 		/***********************************************************************
