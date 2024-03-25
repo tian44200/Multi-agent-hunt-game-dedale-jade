@@ -40,16 +40,18 @@ public class MapManager implements Serializable{
     private static final long serialVersionUID = -1333959882640838272L;
 
     private MapRepresentation myMap;
-    private Map<String, SerializableSimpleGraph<String, MapAttribute>> subgrapheToShareForAgent;
+    private Map<String, SerializableSimpleGraph<String, MapAttribute>> staticSubgrapheToShareForAgent;
+    private Map<String, GraphWithTime> SubgrapheToShareForAgent;
 
     public MapManager(MapRepresentation myMap, List<String> agents) {
     	this.myMap = myMap;
-        this.subgrapheToShareForAgent = new HashMap<>();
+        this.staticSubgrapheToShareForAgent = new HashMap<>();
         for (String agent : agents) {
             AID aid = new AID(agent, AID.ISLOCALNAME);
-            this.subgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
+            this.staticSubgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
+            this.staticSubgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
         }
-        System.out.println("Subgraphes created"+this.subgrapheToShareForAgent.toString());
+        System.out.println("Subgraphes created"+this.staticSubgrapheToShareForAgent.toString());
     }
 
     public synchronized MapRepresentation getMyMap() {
@@ -61,20 +63,20 @@ public class MapManager implements Serializable{
         this.myMap.addNode(id, mapAttribute);
 
         // Also add/update this node in each agent's subgraph
-        for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
+        for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.staticSubgrapheToShareForAgent.values()) {
             subgraph.addNode(id, mapAttribute);
         }
-        // System.out.println("Subgraphes added Node"+this.subgrapheToShareForAgent.toString());
+        // System.out.println("Subgraphes added Node"+this.staticSubgrapheToShareForAgent.toString());
     }
 
     public synchronized boolean addNewNode(String id) {
         boolean isNodeAdded = this.myMap.addNewNode(id);
         if (isNodeAdded) {
             // Also add this node in each agent's subgraph
-            for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
+            for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.staticSubgrapheToShareForAgent.values()) {
                 subgraph.addNode(id, MapAttribute.open);
             }
-            // System.out.println("Subgraphes added NewNode"+this.subgrapheToShareForAgent.toString());
+            // System.out.println("Subgraphes added NewNode"+this.staticSubgrapheToShareForAgent.toString());
         }
         return isNodeAdded;
     }
@@ -84,7 +86,7 @@ public class MapManager implements Serializable{
         this.myMap.addEdge(node1Id, node2Id);
 
         // Also add this edge in each agent's subgraph
-        for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
+        for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.staticSubgrapheToShareForAgent.values()) {
             if (subgraph.getNode(node1Id) == null) {
                 subgraph.addNode(node1Id, MapAttribute.open); // Assuming SerializableSimpleGraph has a method to add edges
             }
@@ -95,14 +97,26 @@ public class MapManager implements Serializable{
         }
     }
 
-    public synchronized SerializableSimpleGraph<String, MapAttribute> getSerializableSubGraphToShareForAgent(String agentId) {
+    public synchronized SerializableSimpleGraph<String, MapAttribute> getStaticSerialSubGraphForAgent(String agentId) {
         // Prepare the subgraph to be shared
-        SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.subgrapheToShareForAgent.get(agentId);
+        SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
         if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
             return null; 
         }
         // Reset the agent's subgraph
-        this.subgrapheToShareForAgent.put(agentId, new SerializableSimpleGraph<>());
+        this.staticSubgrapheToShareForAgent.put(agentId, new SerializableSimpleGraph<>());
+        // System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+subgraphToShare.toString());
+        return subgraphToShare;
+    }
+
+    public synchronized SerializableSimpleGraph<String, MapAttribute> getDynamicSerialSubGraphForAgent(String agentId) {
+        // Prepare the subgraph to be shared
+        SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
+        if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
+            return null; 
+        }
+        // Reset the agent's subgraph
+        this.staticSubgrapheToShareForAgent.put(agentId, new SerializableSimpleGraph<>());
         // System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+subgraphToShare.toString());
         return subgraphToShare;
     }
@@ -110,9 +124,9 @@ public class MapManager implements Serializable{
     public synchronized void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived, AID senderID) {
         // System.out.println("Merging received subgraph"+sgreceived.toString());
         // Merge the received subgraph into each agent's subgraph
-        for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.subgrapheToShareForAgent.values()) {
+        for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.staticSubgrapheToShareForAgent.values()) {
             // Merge nodes
-            if (subgraph.equals(this.subgrapheToShareForAgent.get(senderID.getName()))) {
+            if (subgraph.equals(this.staticSubgrapheToShareForAgent.get(senderID.getName()))) {
                 continue;
             }
             for (SerializableNode<String, MapAttribute> node : sgreceived.getAllNodes()) {
@@ -131,7 +145,7 @@ public class MapManager implements Serializable{
                 }
             }
         }
-        // System.out.println("Merging done"+this.subgrapheToShareForAgent.toString());
+        // System.out.println("Merging done"+this.staticSubgrapheToShareForAgent.toString());
         // System.out.println("Merging done"+this.myMap.toString());
         // Also merge the received subgraph into the main MapRepresentation
         this.myMap.mergeMap(sgreceived);
@@ -145,3 +159,4 @@ public class MapManager implements Serializable{
         this.myMap.loadSavedData();
     }
 }
+
