@@ -41,7 +41,6 @@ public class MapManager implements Serializable{
 
     private MapRepresentation myMap;
     private Map<String, SerializableSimpleGraph<String, MapAttribute>> staticSubgrapheToShareForAgent;
-    private Map<String, GraphWithTime> SubgrapheToShareForAgent;
 
     public MapManager(MapRepresentation myMap, List<String> agents) {
     	this.myMap = myMap;
@@ -97,7 +96,7 @@ public class MapManager implements Serializable{
         }
     }
 
-    public synchronized SerializableSimpleGraph<String, MapAttribute> getStaticSerialSubGraphForAgent(String agentId) {
+    public synchronized SerializableSimpleGraph<String, MapAttribute> getSerializableSubGraphToShareForAgent(String agentId) {
         // Prepare the subgraph to be shared
         SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
         if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
