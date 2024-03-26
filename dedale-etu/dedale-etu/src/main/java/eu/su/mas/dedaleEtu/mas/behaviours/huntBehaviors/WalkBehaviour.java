@@ -3,6 +3,7 @@ package eu.su.mas.dedaleEtu.mas.behaviours.huntBehaviors;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
 import dataStructures.tuple.Couple;
@@ -14,6 +15,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent;
+import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent.Mode;
 import eu.su.mas.dedaleEtu.mas.behaviours.ShareMapBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.SimpleBehaviour;
@@ -60,7 +62,6 @@ public class WalkBehaviour extends OneShotBehaviour {
 
         //0) Retrieve the current position
         Location myPosition=((AbstractDedaleAgent)this.myAgent).getCurrentPosition();
-
         if (myPosition!=null){
             //List of observable from the agent's current position
             List<Couple<Location,List<Couple<Observation,Integer>>>> lobs=((AbstractDedaleAgent)this.myAgent).observe();//myPosition
@@ -71,6 +72,7 @@ public class WalkBehaviour extends OneShotBehaviour {
             try {
                 // ((SkilledChaseAgent)this.myAgent).setshouldpause(true);
                 this.myAgent.doWait(1000);
+                Thread.sleep(1000);
                 // ((SkilledChaseAgent)this.myAgent).setshouldpause(false);
                 System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+"WAITED FOR 1s - Position: "+myPosition);
             } catch (Exception e) {
@@ -95,6 +97,7 @@ public class WalkBehaviour extends OneShotBehaviour {
 
             //3) while openNodes is not empty, continues.
             if (!((HuntAgent)myAgent).getMapManager().getMyMap().hasOpenNode()){
+                
                 //Explo finished
                 // System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
             }else{
@@ -114,8 +117,17 @@ public class WalkBehaviour extends OneShotBehaviour {
                 //5) At each time step, the agent check if he received a graph from a teammate. 	
                 // If it was written properly, this sharing action should be in a dedicated behaviour set.
                 // // System.out.println(this.myAgent.getLocalName()+" - Map requested to "+list_agentNames);
-
-                ((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNodeId));
+                if (((HuntAgent)myAgent).getMode()==Mode.goaside){
+                    List<String> neighborNodes = ((HuntAgent)myAgent).getMapManager().getMyMap().getNeighborNodes(myPosition.getLocationId());
+                    System.out.println(this.myAgent.getLocalName()+" - Neighbor nodes are "+ neighborNodes);
+                    Random rand = new Random();
+                    nextNodeId = neighborNodes.get(rand.nextInt(neighborNodes.size()));
+                    ((HuntAgent)myAgent).setMode(Mode.explore);
+                }
+                if (!((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNodeId))) {
+                    System.out.println(this.myAgent.getLocalName() + " - Can't move to " + nextNodeId);
+                    ((HuntAgent)myAgent).setMode(Mode.goaside); 
+                }
             }
 
         }

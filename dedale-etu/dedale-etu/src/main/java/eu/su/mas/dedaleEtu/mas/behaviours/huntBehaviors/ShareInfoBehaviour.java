@@ -3,6 +3,7 @@ package eu.su.mas.dedaleEtu.mas.behaviours.huntBehaviors;
 import java.io.IOException;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.DynamicObjectInfo;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapManager;
@@ -25,12 +26,9 @@ public class ShareInfoBehaviour extends OneShotBehaviour{
 
     @Override
     public void action() {
-        // 从DataStore获取数据
         ACLMessage msg = (ACLMessage) this.getDataStore().get("msg");
-        if (msg.getProtocol().equals("REQUEST-TOPO")) {
-            // 获取消息发送者的AID
+        if (msg.getProtocol().equals("QUERY-REF-TOPO")) {
             AID senderAID = msg.getSender();
-            // 创建回复消息(Inform
             ACLMessage reply = new ACLMessage(ACLMessage.INFORM);
             reply.setProtocol("SHARE-TOPO");
             reply.addReceiver(senderAID);
@@ -43,19 +41,18 @@ public class ShareInfoBehaviour extends OneShotBehaviour{
                 if(sg != null) {
                     System.out.println("sg is not null Map sent to "+senderAID.getName());
                     reply.setContentObject(sg);
+                    reply.setSender(this.myAgent.getAID());
                     // Send the message
+                    ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
                     // System.out.println("Map is" + sg.toString());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        // 使用接收到的数据 
         else {
-            if (msg.getProtocol().equals("REQUEST-POSITIONS")) {
-                // 获取消息发送者的AID
+            if (msg.getProtocol().equals("QUERY-REF-POSITIONS")) {
                 AID senderAID = msg.getSender();
-                // 创建回复消息(Inform
                 ACLMessage reply = new ACLMessage(ACLMessage.INFORM);
                 reply.setProtocol("SHARE-POSITIONS");
                 reply.addReceiver(senderAID);
@@ -68,7 +65,9 @@ public class ShareInfoBehaviour extends OneShotBehaviour{
                     if(info != null) {
                         System.out.println("sg is not null Map sent to "+senderAID.getName());
                         reply.setContentObject((Serializable)info);
+                        reply.setSender(this.myAgent.getAID());
                         // Send the message
+                        ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
                         // System.out.println("Map is" + sg.toString());
                     }
                 } catch (IOException e) {

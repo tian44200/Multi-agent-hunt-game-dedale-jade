@@ -123,6 +123,21 @@ public class MapManager implements Serializable{
         this.myMap.mergeMap(sgreceived);
     }
 
+    public synchronized void mergeDynamicInfo(Map<String, DynamicObjectInfo> dynamicInfo) {
+        // Merge the received dynamic info into the main MapManager
+        for (Map.Entry<String, DynamicObjectInfo> entry : dynamicInfo.entrySet()) {
+            String agentId = entry.getKey();
+            DynamicObjectInfo info = entry.getValue();
+            if (this.dynamicObjectsByID.get(agentId) == null) {
+                this.dynamicObjectsByID.put(agentId, info);
+            } else {
+                DynamicObjectInfo currentInfo = this.dynamicObjectsByID.get(agentId);
+                if (info.getEditTime() > currentInfo.getEditTime()) {
+                    this.dynamicObjectsByID.put(agentId, info);
+                }
+            }
+        }
+    }
     public void prepareMigration(){
         this.myMap.prepareMigration();
     }

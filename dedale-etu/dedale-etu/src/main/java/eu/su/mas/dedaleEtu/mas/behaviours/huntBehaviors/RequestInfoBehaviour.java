@@ -15,9 +15,8 @@ public class RequestInfoBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         // 创建消息
-        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-        msg.setProtocol("REQUEST-TOPO");
-        System.out.println("RequestInfoBehaviour");
+        ACLMessage msg = new ACLMessage(ACLMessage.QUERY_REF);
+        msg.setProtocol("QUERY-REF-TOPO");
         // 将消息发送给每个Agent
         for (String agentName : ((HuntAgent)myAgent).getAgentNames()) {
             msg.addReceiver(new AID(agentName, AID.ISLOCALNAME));

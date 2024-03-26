@@ -179,7 +179,11 @@ public class MapRepresentation implements Serializable {
 		return getShortestPath(myPosition,closest.get().getLeft());
 	}
 
-
+	public synchronized List<String> getNeighborNodes(String myPosition) {
+		serializeGraphTopology(); 
+		List<String> neighbors = new ArrayList<>(sg.getEdges(myPosition));
+		return neighbors;
+	}
 
 	public List<String> getOpenNodes(){
 		return this.g.nodes()

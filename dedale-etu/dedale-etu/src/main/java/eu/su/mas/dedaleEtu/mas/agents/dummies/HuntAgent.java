@@ -46,7 +46,7 @@ public class HuntAgent extends AbstractDedaleAgent {
 	private List<String> list_agentNames;
 	private ACLMessage informMessageType;
 	public enum Mode {	
-		explore,patrol,block,adjust;
+		explore,patrol,chase,block,adjust,goaside
 	}
 	private Mode mode = Mode.explore;
 	
@@ -118,6 +118,13 @@ public class HuntAgent extends AbstractDedaleAgent {
 		if (this.mapManager != null){
 			this.mapManager.loadSavedData();
 		}
+	}
+
+	public void setMode(Mode mode) {
+		this.mode = mode;
+	}
+	public Mode getMode() {
+		return this.mode;
 	}
 	public MapManager getMapManager() {
 		return this.mapManager;
