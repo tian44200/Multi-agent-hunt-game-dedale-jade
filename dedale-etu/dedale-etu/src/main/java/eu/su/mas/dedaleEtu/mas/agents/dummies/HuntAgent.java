@@ -44,11 +44,18 @@ public class HuntAgent extends AbstractDedaleAgent {
 	private MapManager mapManager;
 	private boolean shouldpause = true;
 	private List<String> list_agentNames;
-	private ACLMessage informMessageType;
+	private List<ACLMessage> requestMessages;
 	public enum Mode {	
-		explore,patrol,chase,block,adjust,goaside
+		explore, gobase ,team, autonom, goaside
 	}
 	private Mode mode = Mode.explore;
+	private Mode previousMode;
+	private List<String> team_members;
+	private String chefID;
+	private String baseNodeID;
+	private String nextNodeID;
+	private String targetNodeID;
+	private int maxCommunicationScale;
 	
 
 	/**
@@ -146,5 +153,13 @@ public class HuntAgent extends AbstractDedaleAgent {
 	public boolean setshouldpause(boolean shouldpause) {
 		this.shouldpause = shouldpause;
 		return this.shouldpause;
+	}
+
+	public Mode getPreviousMode() {
+		return this.previousMode;
+	}
+
+	public void savePreviousMode() {
+		this.previousMode = this.mode;
 	}
 }

@@ -116,7 +116,7 @@ public final class ConfigurationFile {
 	/**
 	 * Size of the generated environment, mandatory
 	 */
-	public static Integer ENVIRONMENT_SIZE=3;
+	public static Integer ENVIRONMENT_SIZE=6;
 	// Parameters required for some generators (see dedale.gitlab.io)
 	public static Integer OPTIONAL_ADDITIONAL_ENVGENERATOR_PARAM1=1;//used by the BARABASI_ALBERT generator to know the number of childs
 	public static Integer[] GENERATOR_PARAMETERS= {ENVIRONMENT_SIZE,OPTIONAL_ADDITIONAL_ENVGENERATOR_PARAM1};
@@ -154,7 +154,8 @@ public final class ConfigurationFile {
 //	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExplo.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExplo-2.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2";
-	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2.json";
+	// public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2.json";
+	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/AgentHunter-2.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/treasureHunt/map2023-entities.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/treasureHunt/agentTankerCollect.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentKeyboardControlled";

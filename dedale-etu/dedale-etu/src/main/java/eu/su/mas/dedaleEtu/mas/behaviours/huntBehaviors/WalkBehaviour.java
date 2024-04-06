@@ -56,8 +56,9 @@ public class WalkBehaviour extends OneShotBehaviour {
 
     @Override
     public void action() {
-        if(((HuntAgent)myAgent).getMapManager()==null) {
-            ((HuntAgent)myAgent).setMapManager(new MapManager(new MapRepresentation(), ((HuntAgent)myAgent).getAgentNames()));
+        HuntAgent thisAgent = ((HuntAgent)myAgent);
+        if(thisAgent.getMapManager()==null) {
+            thisAgent.setMapManager(new MapManager(new MapRepresentation(), thisAgent.getAgentNames()));
         }
 
         //0) Retrieve the current position
@@ -80,56 +81,73 @@ public class WalkBehaviour extends OneShotBehaviour {
                 System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+" - Error in Wait");
             }
             //1) remove the current node from openlist and add it to closedNodes.
-            ((HuntAgent)myAgent).getMapManager().addNode(myPosition.getLocationId(), MapAttribute.closed);
+            thisAgent.getMapManager().addNode(myPosition.getLocationId(), MapAttribute.closed);
 
             //2) get the surrounding nodes and, if not in closedNodes, add them to open nodes.
             String nextNodeId=null;
             Iterator<Couple<Location, List<Couple<Observation, Integer>>>> iter=lobs.iterator();
             while(iter.hasNext()){
                 Location accessibleNode=iter.next().getLeft();
-                boolean isNewNode=((HuntAgent)myAgent).getMapManager().addNewNode(accessibleNode.getLocationId());
+                boolean isNewNode=thisAgent.getMapManager().addNewNode(accessibleNode.getLocationId());
                 //the node may exist, but not necessarily the edge
                 if (myPosition.getLocationId()!=accessibleNode.getLocationId()) {
-                    ((HuntAgent)myAgent).getMapManager().addEdge(myPosition.getLocationId(), accessibleNode.getLocationId());
+                    thisAgent.getMapManager().addEdge(myPosition.getLocationId(), accessibleNode.getLocationId());
                     if (nextNodeId==null && isNewNode) nextNodeId=accessibleNode.getLocationId();
                 }
             }
-
-            //3) while openNodes is not empty, continues.
-            if (!((HuntAgent)myAgent).getMapManager().getMyMap().hasOpenNode()){
+            if (thisAgent.getMode() == Mode.explore) {
+                //3) while openNodes is not empty, continues Exploring. Else, go back to base
+                if (!thisAgent.getMapManager().getMyMap().hasOpenNode()){
+                    thisAgent.setMode(Mode.gobase);
+                    thisAgent.getMapManager().getMyMap().setMaxHashNodeAsBase();
+                    nextNodeId=thisAgent.getMapManager().getMyMap().getShortestPathToBase(myPosition.getLocationId()).get(0);
+                    //Explo finished
+                    // System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
+                }else{
+                    //4) select next move.
+                    //4.1 If there exist one open node directly reachable, go for it,
+                    //	 otherwise choose one from the openNode list, compute the shortestPath and go for it
+                    if (nextNodeId==null){
+                        //no directly accessible openNode
+                        //chose one, compute the path and take the first step.
+                        nextNodeId=thisAgent.getMapManager().getMyMap().getShortestPathToClosestOpenNode(myPosition.getLocationId()).get(0);//getShortestPath(myPosition,this.openNodes.get(0)).get(0);
+                        //System.out.println(this.myAgent.getLocalName()+"-- list= "+thisAgent.getMapManager().getOpenNodes()+"| nextNode: "+nextNode);
+                    }else {
+                        //System.out.println("nextNode notNUll - "+this.myAgent.getLocalName()+"-- list= "+thisAgent.getMapManager().getOpenNodes()+"\n -- nextNode: "+nextNode);
+                    }
+                    System.out.println(this.myAgent.getLocalName()+" - Next node is "+nextNodeId);
+                    // System.out.println(this.myAgent.getLocalName()+" - Next node is "+nextNodeId);
+                    //5) At each time step, the agent check if he received a graph from a teammate. 	
+                    // If it was written properly, this sharing action should be in a dedicated behaviour set.
+                    // // System.out.println(this.myAgent.getLocalName()+" - Map requested to "+list_agentNames);
+                }
+            }else if (thisAgent.getMode()== Mode.gobase){
+                nextNodeId=thisAgent.getMapManager().getMyMap().getShortestPathToBase(myPosition.getLocationId()).get(0);
+                if (myPosition.getLocationId().equals(nextNodeId)){
+                    thisAgent.setMode(Mode.team);
+                }
                 
-                //Explo finished
-                // System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
-            }else{
-                //4) select next move.
-                //4.1 If there exist one open node directly reachable, go for it,
-                //	 otherwise choose one from the openNode list, compute the shortestPath and go for it
-                if (nextNodeId==null){
-                    //no directly accessible openNode
-                    //chose one, compute the path and take the first step.
-                    nextNodeId=((HuntAgent)myAgent).getMapManager().getMyMap().getShortestPathToClosestOpenNode(myPosition.getLocationId()).get(0);//getShortestPath(myPosition,this.openNodes.get(0)).get(0);
-                    //System.out.println(this.myAgent.getLocalName()+"-- list= "+((HuntAgent)myAgent).getMapManager().getOpenNodes()+"| nextNode: "+nextNode);
-                }else {
-                    //System.out.println("nextNode notNUll - "+this.myAgent.getLocalName()+"-- list= "+((HuntAgent)myAgent).getMapManager().getOpenNodes()+"\n -- nextNode: "+nextNode);
-                }
-                System.out.println(this.myAgent.getLocalName()+" - Next node is "+nextNodeId);
-                // System.out.println(this.myAgent.getLocalName()+" - Next node is "+nextNodeId);
-                //5) At each time step, the agent check if he received a graph from a teammate. 	
-                // If it was written properly, this sharing action should be in a dedicated behaviour set.
-                // // System.out.println(this.myAgent.getLocalName()+" - Map requested to "+list_agentNames);
-                if (((HuntAgent)myAgent).getMode()==Mode.goaside){
-                    List<String> neighborNodes = ((HuntAgent)myAgent).getMapManager().getMyMap().getNeighborNodes(myPosition.getLocationId());
-                    System.out.println(this.myAgent.getLocalName()+" - Neighbor nodes are "+ neighborNodes);
-                    Random rand = new Random();
-                    nextNodeId = neighborNodes.get(rand.nextInt(neighborNodes.size()));
-                    ((HuntAgent)myAgent).setMode(Mode.explore);
-                }
+            } else if (thisAgent.getMode()==Mode.team){
+                // System.out.println(this.myAgent.getLocalName()+" - Waiting at base");
+                exitValue = 1;
+            }
+            if (thisAgent.getMode()== Mode.goaside){
+                List<String> neighborNodes = thisAgent.getMapManager().getMyMap().getNeighborNodes(myPosition.getLocationId());
+                System.out.println(this.myAgent.getLocalName()+" - Neighbor nodes are "+ neighborNodes);
+                Random rand = new Random();
+                nextNodeId = neighborNodes.get(rand.nextInt(neighborNodes.size()));
+                thisAgent.setMode(thisAgent.getPreviousMode());
+            }
+            if (nextNodeId != null) {
+                System.out.println(this.myAgent.getLocalName() + " - Moving to " + nextNodeId);
                 if (!((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNodeId))) {
                     System.out.println(this.myAgent.getLocalName() + " - Can't move to " + nextNodeId);
-                    ((HuntAgent)myAgent).setMode(Mode.goaside); 
+                    if (thisAgent.getMode() == Mode.explore) {
+                        thisAgent.savePreviousMode();
+                        thisAgent.setMode(Mode.goaside);                     
+                    }
                 }
             }
-
         }
     }
 

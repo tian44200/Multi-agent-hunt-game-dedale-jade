@@ -41,7 +41,7 @@ public class HuntFSMBehaviour extends FSMBehaviour {
         registerTransition(STATE_TREAT_INFO, STATE_WALK, 3);
         registerTransition(STATE_TREAT_INFO, STATE_SHARE_INFO, 1);
         registerTransition(STATE_TREAT_INFO, STATE_REQUEST_INFO, 2);
-        // registerTransition(STATE_WALK, STATE_IMMOBILE, 1);
+        registerTransition(STATE_WALK, STATE_IMMOBILE, 1);
         registerTransition(STATE_WALK, STATE_TREAT_INFO,1);
         registerDefaultTransition(STATE_IMMOBILE, STATE_TREAT_INFO);
         registerDefaultTransition(STATE_SHARE_INFO, STATE_TREAT_INFO);
