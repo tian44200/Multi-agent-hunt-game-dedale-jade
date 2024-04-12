@@ -46,11 +46,11 @@ public class HuntAgent extends AbstractDedaleAgent {
 	private List<String> list_agentNames;
 	private List<ACLMessage> requestMessages;
 	public enum Mode {	
-		explore, gobase ,team, autonom, goaside
+		explore, autonom ,team
 	}
 	private Mode mode = Mode.explore;
 	private Mode previousMode;
-	private List<String> team_members;
+	private List<String,String> team_members;
 	private String chefID;
 	private String baseNodeID;
 	private String nextNodeID;

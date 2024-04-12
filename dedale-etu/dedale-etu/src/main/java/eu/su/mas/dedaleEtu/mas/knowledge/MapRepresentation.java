@@ -1,11 +1,16 @@
 package eu.su.mas.dedaleEtu.mas.knowledge;
-
+import javafx.util.Pair; // Import the Pair class
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,10 +21,13 @@ import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.fx_viewer.FxViewer;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.Viewer.CloseFramePolicy;
+import org.graphstream.graph.implementations.Graphs;
+
 
 import dataStructures.serializableGraph.*;
 import dataStructures.tuple.Couple;
@@ -42,8 +50,7 @@ public class MapRepresentation implements Serializable {
 	 */
 
 	public enum MapAttribute {	
-		agent,stench,golem,open,closed,base;
-
+		agent,stenchagent,stench,open,closed;
 	}
 
 	private static final long serialVersionUID = -1333959882640838272L;
@@ -57,13 +64,16 @@ public class MapRepresentation implements Serializable {
 	private String nodeStyle_agent = "node.agent {"+"fill-color: blue;"+"}";
 	private String nodeStyle_stench = "node.stench {"+"fill-color: orange;"+"}";
 	private String nodeStyle_golem = "node.golem {"+"fill-color: red;"+"}";
-	private String nodeStyle=defaultNodeStyle+nodeStyle_agent+nodeStyle_open+nodeStyle_stench+nodeStyle_golem;
+	private String nodeStyle_stenchagent = "node.stenchagent {"+"fill-color: blue;"+"}";
+	private String nodeStyle=defaultNodeStyle+nodeStyle_agent+nodeStyle_open+nodeStyle_stench+nodeStyle_golem+nodeStyle_stenchagent;
 
 	private Graph g; //data structure non serializable
 	private Viewer viewer; //ref to the display,  non serializable
 	private Integer nbEdges;//used to generate the edges ids
-	private String baseID;
+	private String chefID;
 	private SerializableSimpleGraph<String, MapAttribute> sg;//used as a temporary dataStructure during migration
+	private Graph g_initial;
+	private boolean exploreFinished;
 
 	public MapRepresentation() {
 		//System.setProperty("org.graphstream.ui.renderer","org.graphstream.ui.j2dviewer.J2DGraphRenderer");
@@ -112,6 +122,16 @@ public class MapRepresentation implements Serializable {
 	public synchronized boolean addNewNode(String id) {
 		if (this.g.getNode(id)==null){
 			addNode(id,MapAttribute.open);
+			return true;
+		}
+		return false;
+	}
+
+	public synchronized boolean addAgentName(String nodeID, String agentName) {
+		Node node = this.g.getNode(nodeID);
+		if (node != null) {
+			node.setAttribute("ui.label", agentName);
+			node.setAttribute("agentName",agentName);
 			return true;
 		}
 		return false;
@@ -181,21 +201,24 @@ public class MapRepresentation implements Serializable {
 		return getShortestPath(myPosition,closest.get().getLeft());
 	}
 
-	public void setMaxHashNodeAsBase() {
-		String maxHashNode = this.g.nodes()
+	public void setMaxHashChef() {
+		String MaxHash = this.g.nodes()
 				.map(Node::getId)
 				.max(Comparator.comparingInt(String::hashCode))
 				.orElse(null);
-		if (maxHashNode != null) {
-			this.baseID = maxHashNode;
-			this.g.getNode(maxHashNode).setAttribute("ui.class", MapAttribute.base.toString());
+		if (MaxHash != null) {
+			this.chefID = MaxHash;
 		}else{
-			throw new IllegalStateException("No node found to set as base.");
+			throw new IllegalStateException("No node found to set as chef.");
 		}
 	}
+
+	public String getChefID() {
+		return this.chefID;
+	}
 	
-	public List<String> getShortestPathToBase(String myPosition){
-		List<String> path = getShortestPath(myPosition, this.baseID);
+	public List<String> getShortestPathToChef(String myPosition){
+		List<String> path = getShortestPath(myPosition, this.chefID);
         return path;
 	}
 
@@ -211,6 +234,163 @@ public class MapRepresentation implements Serializable {
 				.map(Node::getId)
 				.collect(Collectors.toList());
 	}
+
+	public List<String> getAgentAndStenchAgentNodes() {
+		return this.g.nodes()
+				.filter(x -> x.getAttribute("ui.class").equals(MapAttribute.agent.toString()) 
+						  || x.getAttribute("ui.class").equals(MapAttribute.stenchagent.toString()))
+				.map(Node::getId)
+				.collect(Collectors.toList());
+	}
+	
+
+	public List<String> getStenchNodes() {
+		return this.g.nodes()
+				.filter(x -> x.getAttribute("ui.class").equals(MapAttribute.stench.toString()) 
+						  || x.getAttribute("ui.class").equals(MapAttribute.stenchagent.toString()))
+				.map(Node::getId)
+				.collect(Collectors.toList());
+	}
+	
+	public List<String> addNeighborsToNodes(List<String> nodeIds) {
+		Set<String> neighborsSet = new HashSet<>(); // 使用Set来自动去重
+
+		// 遍历每个节点ID
+		for (String nodeId : nodeIds) {
+			Node node = this.g.getNode(nodeId); // 获取对应的Node对象
+			if (node != null) {
+				// 获取每个节点的所有邻居并添加到集合中
+				node.neighborNodes().forEach(neighborNode -> neighborsSet.add(neighborNode.getId()));
+			}
+			// 将当前节点ID也添加到集合中
+			neighborsSet.add(nodeId);
+		}
+
+		// 将Set转换为List并返回
+		return new ArrayList<>(neighborsSet);
+	}
+	
+
+	public double calculateNodeScore(String nodeId) {
+		Node node = g.getNode(nodeId); // 从图中获取节点对象
+		if (node == null) {
+			return 0.0; // 如果节点不存在，返回0分
+		}
+		Set<String> visited = new HashSet<>(); // 用于避免重复访问节点
+		return dfsCalculateScore(node, 0, visited); // 开始深度优先搜索计算分数
+	}
+	
+
+	private double dfsCalculateScore(Node node, int depth, Set<String> visited) {
+		double score = 0.0;
+	
+		// 检查节点是否已经被访问过，避免循环
+		if (!visited.contains(node.getId())) {
+			visited.add(node.getId());
+	
+			// 获取节点的MapAttribute属性
+			MapAttribute attribute = node.getAttribute("ui.class", MapAttribute.class);
+	
+			// 如果节点是stench或stenchagent，则根据深度计算分数
+			if (attribute == MapAttribute.stench || attribute == MapAttribute.stenchagent) {
+				score += Math.pow(0.5, depth);
+			} else {
+				// 如果节点不是stench或stenchagent，则立即返回0分并终止这个探索分支
+				return 0.0;
+			}
+	
+			// 对所有邻居节点递归调用dfsCalculateScore
+			for (Edge edge : node.leavingEdges().collect(Collectors.toList())) {
+				Node nextNode = edge.getOpposite(node);
+				score += dfsCalculateScore(nextNode, depth + 1, visited);
+			}
+		}
+	
+		return score;
+	}
+	
+
+public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeForAgent() {
+	List<String> agents = getAgentAndStenchAgentNodes();
+	System.out.println("Agents: " + agents); // Debug print
+
+	List<String> targetNodes = new ArrayList<>();
+	if (hasStenchNode()) {
+		targetNodes = getStenchNodes();
+		System.out.println("Stench nodes: " + targetNodes); // Debug print
+
+		while (targetNodes.size() < agents.size()) {
+			targetNodes = addNeighborsToNodes(targetNodes);
+			System.out.println("Added neighbors to nodes: " + targetNodes); // Debug print
+		}
+	} else {
+		for (String agent : agents) {
+			List<String> neighbors = getNeighborNodes(agent);
+			System.out.println("Neighbors of agent " + agent + ": " + neighbors); // Debug print
+
+			if (!neighbors.isEmpty()) {
+				int randomIndex = new Random().nextInt(neighbors.size());
+				String randomNeighbor = neighbors.get(randomIndex);
+				targetNodes.add(randomNeighbor);
+				System.out.println("Added random neighbor " + randomNeighbor + " to target nodes"); // Debug print
+			}
+		}
+	}   
+
+	Map<String, Double> nodeScores = new HashMap<>();
+	for (String node : targetNodes) {
+		double score = calculateNodeScore(node);
+		nodeScores.put(node, score);
+		System.out.println("Node " + node + " score: " + score); // Debug print
+	}
+	nodeScores = nodeScores.entrySet().stream()
+		.sorted((e1, e2) -> {
+			int compare = e2.getValue().compareTo(e1.getValue());
+			if (compare != 0) {
+				return compare;
+			} else {
+				return Math.random() < 0.5 ? -1 : 1;
+			}
+		})
+		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+	System.out.println("Sorted node scores: " + nodeScores); // Debug print
+
+	Map<String, Pair<String, String>> agentNodeMap = new HashMap<>();
+	for (Map.Entry<String, Double> entry : nodeScores.entrySet()) {
+		if (agents.isEmpty()) {
+			break;
+		}
+
+		String node = entry.getKey();
+		String closestAgent = null;
+		List<String> shortestPath = null;
+
+		for (String agent : agents) {
+			List<String> path = getShortestPath(agent, node);
+			System.out.println("Shortest path from agent " + agent + " to node " + node + ": " + path); // Debug print
+
+			if (shortestPath == null || path.size() < shortestPath.size()) {
+				shortestPath = path;
+				closestAgent = agent;
+			}
+		}
+		System.out.println("ShortestPath: " + shortestPath.toString()); // Debug print
+		String nextNode = null;
+		if (!shortestPath.isEmpty()) {
+			nextNode = shortestPath.get(0);
+			g.removeNode(nextNode); // remove the nextNode from the graph
+			System.out.println("Removed node " + nextNode + " from the graph"); // Debug print
+		}
+		
+		agentNodeMap.put(closestAgent, new Pair<>(node, nextNode));
+		agents.remove(closestAgent);
+		System.out.println("Assigned agent " + closestAgent + " to node " + node + " with next node " + nextNode); // Debug print
+	}
+
+	System.out.println("Final agent-node map: " + agentNodeMap); // Debug print
+	return agentNodeMap;
+}
+
 
 
 	/**
@@ -299,10 +479,18 @@ public class MapRepresentation implements Serializable {
 		g.display();
 	}
 
+	public void saveInitialGraph() {
+        this.g_initial = Graphs.clone(this.g);
+    }
+
+	public void restoreInitialGraph() {
+        this.g = Graphs.clone(this.g_initial);
+    }
+
 	public void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
 		//System.out.println("You should decide what you want to save and how");
 		//System.out.println("We currently blindy add the topology");
-
+		System.out.println("sg while merging map: " + sgreceived.toString());
 		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
 			//System.out.println(n);
 			boolean alreadyIn =false;
@@ -320,9 +508,17 @@ public class MapRepresentation implements Serializable {
 			}else{
 				newnode=this.g.getNode(n.getNodeId());
 				//3 check its attribute. If it is below the one received, update it.
-				if (((String) newnode.getAttribute("ui.class"))==MapAttribute.closed.toString() || n.getNodeContent().toString()==MapAttribute.closed.toString()) {
-					newnode.setAttribute("ui.class",MapAttribute.closed.toString());
+				if (!exploreFinished){
+					if (((String) newnode.getAttribute("ui.class"))==MapAttribute.closed.toString() || n.getNodeContent().toString()==MapAttribute.closed.toString()) {
+						newnode.setAttribute("ui.class",MapAttribute.closed.toString());
+					}
 				}
+				else{
+					System.out.println("Explore finished for MapRepresentation, merge the variante node content.");
+					System.out.println("Node"+ n.toString()+ "Content "+ n.getNodeContent().toString());
+					newnode.setAttribute("ui.class", n.getNodeContent().toString());
+				}
+				
 			}
 		}
 
@@ -330,10 +526,49 @@ public class MapRepresentation implements Serializable {
 		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
 			for(String s:sgreceived.getEdges(n.getNodeId())){
 				addEdge(n.getNodeId(),s);
+				
 			}
 		}
 		//System.out.println("Merge done");
 	}
+
+	public void setExploreFinishedTrue() {
+		this.exploreFinished = true;
+	}
+
+	public SerializableSimpleGraph<String, MapAttribute> mergeMapAndGetDifference(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
+		SerializableSimpleGraph<String, MapAttribute> diffMap = new SerializableSimpleGraph<>();
+
+		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
+			boolean alreadyIn =false;
+			Node newnode=null;
+			try {
+				newnode=this.g.addNode(n.getNodeId());
+			} catch(IdAlreadyInUseException e) {
+				alreadyIn=true;
+			}
+			if (!alreadyIn) {
+				newnode.setAttribute("ui.label", newnode.getId());
+				diffMap.addNode(n.getNodeId());
+			} else {
+				newnode=this.g.getNode(n.getNodeId());
+				if (((String) newnode.getAttribute("ui.class"))==MapAttribute.closed.toString() || n.getNodeContent().toString()==MapAttribute.closed.toString()) {
+					newnode.setAttribute("ui.class",MapAttribute.closed.toString());
+				}
+			}
+		}
+
+		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){
+			for(String s:sgreceived.getEdges(n.getNodeId())){
+				addEdge(n.getNodeId(),s);
+				diffMap.addEdge(this.nbEdges.toString(),n.getNodeId(), s); // Add the new edge to the difference map
+			}
+		}
+
+		// If diffMap contains any nodes, return it. Otherwise, return null.
+		return diffMap.getAllNodes().isEmpty() ? null : diffMap;
+	}
+
 
 	/**
 	 * 
@@ -343,5 +578,32 @@ public class MapRepresentation implements Serializable {
 		return (this.g.nodes()
 				.filter(n -> n.getAttribute("ui.class")==MapAttribute.open.toString())
 				.findAny()).isPresent();
+	}
+
+	public int getDegreeForNode(String nodeID) {
+		Node node = this.g.getNode(nodeID);
+		if (node != null) {
+			return node.getDegree();
+		}
+		return 0;
+	}
+
+	public List<String> getNeighborsForNode(String nodeID) {
+		Node node = this.g.getNode(nodeID);
+		if (node != null) {
+			return node.neighborNodes().map(Node::getId).collect(Collectors.toList());
+		}
+		return new ArrayList<>();
+	}
+
+	public boolean hasStenchNode() {
+		return (this.g.nodes()
+				.filter(n -> n.getAttribute("ui.class")==MapAttribute.stench.toString())
+				.findAny()).isPresent();
+	}
+
+	public void clearMap() {
+		this.g.clear();
+		this.nbEdges = 0;
 	}
 }

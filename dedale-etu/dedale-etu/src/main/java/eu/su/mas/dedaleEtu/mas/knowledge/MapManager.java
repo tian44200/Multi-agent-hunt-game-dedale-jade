@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.knowledge;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -11,27 +12,26 @@ import java.util.Set;
 import dataStructures.serializableGraph.*;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import jade.core.AID;
-import eu.su.mas.dedaleEtu.mas.knowledge.DynamicObjectInfo.Type;
+import javafx.util.Pair;
 
 public class MapManager implements Serializable{
     private static final long serialVersionUID = -1333959882640838272L;
 
     private MapRepresentation myMap;
     private Map<String, SerializableSimpleGraph<String, MapAttribute>> staticSubgrapheToShareForAgent;
-    private Map<String, DynamicObjectInfo> dynamicObjectsByID;
-    private Map<String, List<DynamicObjectInfo>> dynamicObjectsByType;
+    private MapRepresentation communicationMap;
+    private MapRepresentation observationMap;
+    private String myAgentID;
 
     public MapManager(MapRepresentation myMap, List<String> agents) {
     	this.myMap = myMap;
         this.staticSubgrapheToShareForAgent = new HashMap<>();
-        this.dynamicObjectsByID = new HashMap<>();
-        this.dynamicObjectsByType = new HashMap<>();
         for (String agent : agents) {
-            AID aid = new AID(agent, AID.ISLOCALNAME);
-            this.staticSubgrapheToShareForAgent.put(aid.getName(), new SerializableSimpleGraph<>());
-            this.dynamicObjectsByID.put(aid.getName(), new DynamicObjectInfo(aid.getName(), Type.agent, 0L, null));
+            this.staticSubgrapheToShareForAgent.put(agent, new SerializableSimpleGraph<>());
         }
         System.out.println("Subgraphes created"+this.staticSubgrapheToShareForAgent.toString());
+        this.communicationMap = new MapRepresentation();
+        this.observationMap = new MapRepresentation();
     }
 
     public synchronized MapRepresentation getMyMap() {
@@ -79,6 +79,7 @@ public class MapManager implements Serializable{
 
     public synchronized SerializableSimpleGraph<String, MapAttribute> getSerialSubGraphForAgent(String agentId) {
         // Prepare the subgraph to be shared
+        System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+this.staticSubgrapheToShareForAgent.get(agentId).toString());
         SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
         if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
             return null; 
@@ -88,17 +89,16 @@ public class MapManager implements Serializable{
         // System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+subgraphToShare.toString());
         return subgraphToShare;
     }
-
-    public synchronized Map<String, DynamicObjectInfo> getDynamicInfo() {
-        return this.dynamicObjectsByID;
-    }
     
-    public synchronized void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived, AID senderID) {
+    public synchronized void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived, String senderID) {
+        // System.out.println("Merge Map from "+senderID);
+        // System.out.println("Subgraphs before merging"+this.staticSubgrapheToShareForAgent.toString());
+        // System.out.println("MyMap before merging "+this.myMap.getSerializableGraph().toString());
         // System.out.println("Merging received subgraph"+sgreceived.toString());
         // Merge the received subgraph into each agent's subgraph
         for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.staticSubgrapheToShareForAgent.values()) {
             // Merge nodes
-            if (subgraph.equals(this.staticSubgrapheToShareForAgent.get(senderID.getName()))) {
+            if (subgraph.equals(this.staticSubgrapheToShareForAgent.get(senderID))) {
                 continue;
             }
             for (SerializableNode<String, MapAttribute> node : sgreceived.getAllNodes()) {
@@ -117,33 +117,49 @@ public class MapManager implements Serializable{
                 }
             }
         }
-        // System.out.println("Merging done"+this.staticSubgrapheToShareForAgent.toString());
-        // System.out.println("Merging done"+this.myMap.toString());
         // Also merge the received subgraph into the main MapRepresentation
         this.myMap.mergeMap(sgreceived);
+        // System.out.println("Merging done"+this.staticSubgrapheToShareForAgent.toString());
+        // System.out.println("Merging done"+this.myMap.getSerializableGraph().toString());
     }
 
-    public synchronized void mergeDynamicInfo(Map<String, DynamicObjectInfo> dynamicInfo) {
-        // Merge the received dynamic info into the main MapManager
-        for (Map.Entry<String, DynamicObjectInfo> entry : dynamicInfo.entrySet()) {
-            String agentId = entry.getKey();
-            DynamicObjectInfo info = entry.getValue();
-            if (this.dynamicObjectsByID.get(agentId) == null) {
-                this.dynamicObjectsByID.put(agentId, info);
-            } else {
-                DynamicObjectInfo currentInfo = this.dynamicObjectsByID.get(agentId);
-                if (info.getEditTime() > currentInfo.getEditTime()) {
-                    this.dynamicObjectsByID.put(agentId, info);
-                }
-            }
-        }
+    public MapRepresentation getCommunicationMap() {
+        return this.communicationMap;
     }
+    public void cleanCommunicationMap() {
+        this.communicationMap = new MapRepresentation();
+    }
+
+    public MapRepresentation getObservationMap() {
+        return this.observationMap;
+    }
+
+    public void cleanObservationMap() {
+        this.observationMap = new MapRepresentation();
+    }
+
     public void prepareMigration(){
         this.myMap.prepareMigration();
+        this.communicationMap.prepareMigration();
     }
 
     public void loadSavedData(){
         this.myMap.loadSavedData();
+        this.communicationMap.loadSavedData();
+    }
+
+    public void addDirectCommunication(String agentID) {
+        this.communicationMap.addNewNode(agentID);
+        this.communicationMap.addEdge(myAgentID, agentID);
+    }
+
+    public List<String> getDirectCommunications() {
+        return this.communicationMap.getNeighborsForNode(myAgentID);
+    }
+
+    public Map<String, Pair<String, String>> computeTargetAndNextNodeForAgent() {
+        this.myMap.mergeMap(this.observationMap.getSerializableGraph());
+        return this.myMap.computeTargetAndNextNodeForAgent();
     }
 }
 

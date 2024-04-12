@@ -151,6 +151,25 @@ public class WalkBehaviour extends OneShotBehaviour {
         }
     }
 
+    public boolean teamup() {
+        HuntAgent thisAgent = ((HuntAgent)myAgent);
+        List<String> list_agentNames = thisAgent.getAgentNames();
+        List<ACLMessage> requestMessages = thisAgent.getRequestMessages();
+        if (list_agentNames.size() == 0) {
+            System.err.println("Error while creating the agent, names of agent to contact expected");
+            System.exit(-1);
+        } else {
+            for (String agentName : list_agentNames) {
+                ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+                msg.setSender(thisAgent.getAID());
+                msg.addReceiver(new AID(agentName, AID.ISLOCALNAME));
+                msg.setContent("ShareMap");
+                requestMessages.add(msg);
+            }
+        }
+        return true;
+    }
+
     @Override
     public int onEnd() {
         return exitValue;
