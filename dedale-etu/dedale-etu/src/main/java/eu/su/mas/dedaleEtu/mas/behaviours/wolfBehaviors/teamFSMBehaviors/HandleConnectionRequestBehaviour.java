@@ -1,6 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors;
 
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -42,15 +43,14 @@ public class HandleConnectionRequestBehaviour extends Behaviour {
             ACLMessage reply = request.createReply();
             reply.setPerformative(ACLMessage.INFORM);
             reply.setProtocol("ConnectionResponse");
-            myAgent.send(reply);
+            reply.setSender(this.myAgent.getAID());
+            ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
             try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-        } else {
-            block();
         }
 
         ACLMessage response = myAgent.receive(mt2);
@@ -60,14 +60,13 @@ public class HandleConnectionRequestBehaviour extends Behaviour {
             ACLMessage confirm = response.createReply();
             confirm.setPerformative(ACLMessage.CONFIRM);
             confirm.setProtocol("ConnectionConfirm");
-            myAgent.send(confirm);
+            confirm.setSender(this.myAgent.getAID());
+            ((AbstractDedaleAgent)this.myAgent).sendMessage(confirm);
             try {
                 Thread.sleep(1000); // 暂停1秒
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } else {
-            block();
         }
 
         ACLMessage confirm = myAgent.receive(mt3);
@@ -78,8 +77,6 @@ public class HandleConnectionRequestBehaviour extends Behaviour {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } else {
-            block();
         }
     }
 

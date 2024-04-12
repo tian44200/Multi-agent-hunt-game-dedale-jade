@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 
 public class ReceiveTaskBehaviour extends OneShotBehaviour {
@@ -41,12 +42,13 @@ public class ReceiveTaskBehaviour extends OneShotBehaviour {
                         ACLMessage forwardMsg = new ACLMessage(ACLMessage.INFORM);
                         forwardMsg.setProtocol("Task-Distribution-Protocol");
                         forwardMsg.addReceiver(new AID(child, AID.ISLOCALNAME));
+                        forwardMsg.setSender(this.myAgent.getAID());
                         try {
                             forwardMsg.setContentObject((Serializable) agentTargets);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        myAgent.send(forwardMsg);
+                        ((AbstractDedaleAgent)this.myAgent).sendMessage(forwardMsg);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

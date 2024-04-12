@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 
 public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
@@ -42,12 +43,13 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.setProtocol("Task-Distribution-Protocol"); // 设置协议
                 msg.addReceiver(new AID(child, AID.ISLOCALNAME));
+                msg.setSender(this.myAgent.getAID());
                 try {
                     msg.setContentObject((Serializable) agentTargetNodes);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                myAgent.send(msg);
+                ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
             }
         } 
         try {

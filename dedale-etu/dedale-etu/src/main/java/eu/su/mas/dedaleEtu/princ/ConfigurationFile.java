@@ -130,7 +130,7 @@ public final class ConfigurationFile {
 	/**
 	 * 	Agents communication radius
 	 */
-	public static Integer DEFAULT_COMMUNICATION_REACH=0;
+	public static Integer DEFAULT_COMMUNICATION_REACH=3;
 
 	/**
 	 * Elements on the map
@@ -155,7 +155,7 @@ public final class ConfigurationFile {
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExplo-2.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2";
 	// public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2.json";
-	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/AgentHunter-2.json";
+	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/AgentWolf-2.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/treasureHunt/map2023-entities.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/treasureHunt/agentTankerCollect.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentKeyboardControlled";

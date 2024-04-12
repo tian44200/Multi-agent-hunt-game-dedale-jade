@@ -97,12 +97,6 @@ public class WolfAgent extends AbstractDedaleAgent {
 		/***
 		 * MANDATORY TO ALLOW YOUR AGENT TO BE DEPLOYED CORRECTLY
 		 */
-		try {
-			Thread.sleep(15000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		addBehaviour(new startMyBehaviours(this,lb));
 		
 		System.out.println("the  agent "+this.getLocalName()+ " is started");

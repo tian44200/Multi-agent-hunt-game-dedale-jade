@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import jade.core.behaviours.Behaviour;
@@ -94,6 +94,7 @@ public class ReportObservationsBehavior extends Behaviour {
             ACLMessage obsMsg = new ACLMessage(ACLMessage.INFORM);
             obsMsg.addReceiver(new AID(parent, AID.ISLOCALNAME));
             obsMsg.setProtocol("ObservationData");
+            obsMsg.setSender(this.myAgent.getAID());
             // 将地图信息转换为可序列化对象发送
             SerializableSimpleGraph<String, MapAttribute> sg=wolfAgent.getMapManager().getObservationMap().getSerializableGraph();
             try {
@@ -101,7 +102,7 @@ public class ReportObservationsBehavior extends Behaviour {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            myAgent.send(obsMsg);
+            ((AbstractDedaleAgent)this.myAgent).sendMessage(obsMsg);
         }
     }
 

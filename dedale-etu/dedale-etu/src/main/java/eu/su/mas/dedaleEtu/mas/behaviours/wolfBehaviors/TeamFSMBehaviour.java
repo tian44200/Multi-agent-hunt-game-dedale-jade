@@ -28,7 +28,7 @@ public class TeamFSMBehaviour extends FSMBehaviour {
 
         // 收集连接响应
         String HANDLE_CONNECTION_REQUEST_BEHAVIOUR = "HandleConnectionRequestBehaviour";
-        registerState(new HandleConnectionRequestBehaviour(agent,1000), HANDLE_CONNECTION_REQUEST_BEHAVIOUR);
+        registerState(new HandleConnectionRequestBehaviour(agent,10000), HANDLE_CONNECTION_REQUEST_BEHAVIOUR);
         
 
         // 分享连接信息

@@ -35,7 +35,8 @@ public class TeamSetUpBehaviour extends OneShotBehaviour {
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.addReceiver(new AID(parent, AID.ISLOCALNAME));
                 msg.setProtocol("ParentConfirmation");
-                myAgent.send(msg);
+                msg.setSender(this.myAgent.getAID());
+                ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
                 System.out.println(myAgent.getLocalName() + " informs " + parent + " as the parent.");
                 ((WolfAgent) myAgent).setParent(parent);
             }

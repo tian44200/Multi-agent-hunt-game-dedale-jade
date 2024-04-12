@@ -8,6 +8,7 @@ import java.util.Random;
 import dataStructures.tuple.Couple;
 import eu.su.mas.dedale.env.Location;
 import eu.su.mas.dedale.env.Observation;
+import eu.su.mas.dedale.env.gs.gsLocation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
@@ -39,7 +40,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
 	private static final long serialVersionUID = 8567689731496787661L;
 
     private boolean explorefinished = false;
-    private int queryRefCount = 0;  // 消息发送计数器
+    private int queryRefCount = 0;  // Counter for the number of queries sent
 
     private ShareMapBehaviour shareMapBehaviour;
     private MergeMapBehaviour mergeMapBehaviour;
@@ -62,7 +63,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
             thisAgent.addBehaviour(this.shareMapBehaviour);
             thisAgent.addBehaviour(this.mergeMapBehaviour);
             try {
-				Thread.sleep(10000);
+				Thread.sleep(15000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -113,7 +114,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
                 this.myAgent.removeBehaviour(this.mergeMapBehaviour);
                 thisAgent.setExplorefinished(true);
                 thisAgent.getMapManager().getMyMap().saveInitialGraph();
-                // this.myAgent.addBehaviour(new TeamFSMBehaviour(thisAgent));
+                this.myAgent.addBehaviour(new TeamFSMBehaviour(thisAgent));
                 //Explo finished
                 System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
                 System.out.println(this.myAgent.getLocalName()+" - Map: "+thisAgent.getMapManager().getMyMap().toString());
@@ -143,13 +144,13 @@ public class ExploreBehaviour extends SimpleBehaviour {
                     nextNodeId = neighborNodes.get(rand.nextInt(neighborNodes.size()));
                     thisAgent.setInterblock(false);
                 }
-                // if (nextNodeId != null) {
-                //     System.out.println(this.myAgent.getLocalName() + " - Moving to " + nextNodeId);
-                //     if (!((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNodeId))) {
-                //         System.out.println(this.myAgent.getLocalName() + " - Can't move to " + nextNodeId);
-                //         thisAgent.setInterblock(true);
-                //     }
-                // }
+                if (nextNodeId != null) {
+                    System.out.println(this.myAgent.getLocalName() + " - Moving to " + nextNodeId);
+                    if (!((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNodeId))) {
+                        System.out.println(this.myAgent.getLocalName() + " - Can't move to " + nextNodeId);
+                        thisAgent.setInterblock(true);
+                    }
+                }
         }}}
 
     @Override
@@ -160,15 +161,14 @@ public class ExploreBehaviour extends SimpleBehaviour {
     private void requestMapInfo() {
         ACLMessage requestMsg = new ACLMessage(ACLMessage.QUERY_REF);
         requestMsg.setProtocol("QUERY-REF-TOPO");
-        requestMsg.setContent("Request Count: " + ++queryRefCount); // 预先增加计数器
+        requestMsg.setContent("Request Count: " + ++queryRefCount); // 
+        requestMsg.setSender(this.myAgent.getAID());
         
-        // 添加所有代理作为接收者
         for (String agentName : ((WolfAgent)myAgent).getAgentNames()) {
             requestMsg.addReceiver(new AID(agentName, AID.ISLOCALNAME));
         }
         
-        myAgent.send(requestMsg);
-        queryRefCount++;  // 增加消息计数
+        ((AbstractDedaleAgent)this.myAgent).sendMessage(requestMsg);
         System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Sent TOPO request #" + queryRefCount + " to all team members");
     }
     

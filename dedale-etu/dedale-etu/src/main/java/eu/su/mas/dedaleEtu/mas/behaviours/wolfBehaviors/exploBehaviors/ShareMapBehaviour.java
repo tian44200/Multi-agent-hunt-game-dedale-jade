@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
@@ -46,7 +47,7 @@ public class ShareMapBehaviour extends CyclicBehaviour {
                 SerializableSimpleGraph<String, MapAttribute> sg = ((WolfAgent)myAgent).getMapManager().getSerialSubGraphForAgent(senderAID.getLocalName());
                 if (sg!=null){
                     reply.setContentObject(sg);
-                    myAgent.send(reply);
+                    ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
                 }
                 else{
                     System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - sg is null, no map to share");

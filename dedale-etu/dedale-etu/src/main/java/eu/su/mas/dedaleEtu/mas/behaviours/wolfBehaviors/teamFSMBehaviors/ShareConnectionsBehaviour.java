@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import dataStructures.serializableGraph.SerializableSimpleGraph;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
@@ -35,6 +36,7 @@ public class ShareConnectionsBehaviour extends Behaviour {
         // 创建一个新的ACL消息
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setProtocol("ShareCommunicationMap");
+        msg.setSender(this.myAgent.getAID());
         try {
             msg.setContentObject(communicationMap.getSerializableGraph());
         } catch (Exception e) {
@@ -45,7 +47,7 @@ public class ShareConnectionsBehaviour extends Behaviour {
         for (String agentName : directCommunications) {
             msg.addReceiver(((WolfAgent) myAgent).getAID(agentName));
         }
-        myAgent.send(msg);
+        ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
     }
 
     @Override
@@ -75,6 +77,7 @@ public class ShareConnectionsBehaviour extends Behaviour {
                 // Create a new ACL message
                 ACLMessage diffMsg = new ACLMessage(ACLMessage.INFORM);
                 diffMsg.setProtocol("ShareCommunicationMap");
+                diffMsg.setSender(this.myAgent.getAID());
                 try {
                     diffMsg.setContentObject(diffMap);
                 } catch (Exception e) {
@@ -87,7 +90,7 @@ public class ShareConnectionsBehaviour extends Behaviour {
                         diffMsg.addReceiver(new AID(agentName, AID.ISLOCALNAME));
                     }
                 }
-                myAgent.send(diffMsg);
+                ((AbstractDedaleAgent)this.myAgent).sendMessage(diffMsg);
                 try {
                     Thread.sleep(1000); // 暂停1秒
                 } catch (InterruptedException e) {
