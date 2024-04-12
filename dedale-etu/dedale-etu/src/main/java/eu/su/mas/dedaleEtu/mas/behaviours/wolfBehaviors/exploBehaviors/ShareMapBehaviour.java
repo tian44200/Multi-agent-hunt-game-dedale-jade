@@ -1,9 +1,7 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.exploBehaviors;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.io.IOException;

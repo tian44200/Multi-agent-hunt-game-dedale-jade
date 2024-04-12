@@ -5,25 +5,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import dataStructures.serializableGraph.SerializableSimpleGraph;
 import dataStructures.tuple.Couple;
 import eu.su.mas.dedale.env.Location;
 import eu.su.mas.dedale.env.Observation;
-import eu.su.mas.dedale.env.gs.gsLocation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent;
-import eu.su.mas.dedaleEtu.mas.agents.dummies.HuntAgent.Mode;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.TeamFSMBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import weka.core.pmml.jaxbbindings.True;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapManager;   
 import jade.core.AID;
 
@@ -121,7 +113,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
                 this.myAgent.removeBehaviour(this.mergeMapBehaviour);
                 thisAgent.setExplorefinished(true);
                 thisAgent.getMapManager().getMyMap().saveInitialGraph();
-                this.myAgent.addBehaviour(new TeamFSMBehaviour(thisAgent));
+                // this.myAgent.addBehaviour(new TeamFSMBehaviour(thisAgent));
                 //Explo finished
                 System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
                 System.out.println(this.myAgent.getLocalName()+" - Map: "+thisAgent.getMapManager().getMyMap().toString());

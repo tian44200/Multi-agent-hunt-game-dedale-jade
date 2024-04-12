@@ -2,31 +2,13 @@ package eu.su.mas.dedaleEtu.mas.agents.dummies;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import dataStructures.serializableGraph.SerializableSimpleGraph;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedale.mas.agent.behaviours.platformManagment.*;
-import eu.su.mas.dedaleEtu.mas.behaviours.ExploBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.huntBehaviors.HuntFSMBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.huntBehaviors.ShareMapFSMBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.TeamFSMBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.exploBehaviors.ExploreBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.exploBehaviors.MergeMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.exploBehaviors.ShareMapBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ComputeAndAssignTaskBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ExecuteMoveBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.HandleConnectionRequestBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.RequestConnectionBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ShareConnectionsBehaviour;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapManager;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
-import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
-import jade.lang.acl.ACLMessage;
 import javafx.util.Pair;
-import jade.core.AID;
 import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.FSMBehaviour;
 
 /**
  * <pre>
