@@ -45,12 +45,6 @@ public class HandleConnectionRequestBehaviour extends Behaviour {
             reply.setProtocol("ConnectionResponse");
             reply.setSender(this.myAgent.getAID());
             ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
-            try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
         }
 
         ACLMessage response = myAgent.receive(mt2);

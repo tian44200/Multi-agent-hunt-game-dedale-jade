@@ -110,7 +110,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
             if (!thisAgent.getMapManager().getMyMap().hasOpenNode()){
                 this.explorefinished=true;
                 thisAgent.getMapManager().getMyMap().setExploreFinishedTrue();
-                // this.myAgent.removeBehaviour(this.shareMapBehaviour);
+                this.myAgent.removeBehaviour(this.shareMapBehaviour);
                 this.myAgent.removeBehaviour(this.mergeMapBehaviour);
                 thisAgent.setExplorefinished(true);
                 thisAgent.getMapManager().getMyMap().saveInitialGraph();

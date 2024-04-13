@@ -25,6 +25,7 @@ public class ReceiveTaskBehaviour extends OneShotBehaviour {
 
     @Override
     public void action() {
+        this.myAgent.doWait(10000000);
         System.out.println(this.myAgent.getLocalName() + " - ReceiveTaskBehaviour");
         MessageTemplate mt = MessageTemplate.MatchProtocol("Task-Distribution-Protocol");
         ACLMessage msg = myAgent.receive(mt);
@@ -59,8 +60,6 @@ public class ReceiveTaskBehaviour extends OneShotBehaviour {
                     e.printStackTrace();
                 }
             }
-        } else {
-            block();
         }
     }
 }

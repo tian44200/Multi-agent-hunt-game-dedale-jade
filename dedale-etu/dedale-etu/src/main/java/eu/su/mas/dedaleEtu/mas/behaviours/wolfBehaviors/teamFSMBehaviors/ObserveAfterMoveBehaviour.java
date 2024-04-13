@@ -67,11 +67,6 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
                 }
             }
             wolfAgent.checkArriveTarget();
-            try {
-                Thread.sleep(1000); // 暂停1秒
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

@@ -48,6 +48,7 @@ public class ReportObservationsBehavior extends Behaviour {
 
     @Override
     public void action() {
+        this.myAgent.doWait(1000);
         MessageTemplate mt = MessageTemplate.MatchProtocol("ObservationData");
         ACLMessage msg = myAgent.receive(mt);
         if (msg != null) {
@@ -83,8 +84,6 @@ public class ReportObservationsBehavior extends Behaviour {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } else {
-            block();
         }
     }
 
