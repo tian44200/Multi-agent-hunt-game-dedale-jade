@@ -66,6 +66,10 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
                     }
                 }
             }
+            String blockUnknownPos = wolfAgent.getblockUnknownPos();
+            if (blockUnknownPos!= null) {
+                wolfAgent.getMapManager().getObservationMap().addNode(blockUnknownPos, MapAttribute.golem);
+            }
             wolfAgent.checkArriveTarget();
         }
     }

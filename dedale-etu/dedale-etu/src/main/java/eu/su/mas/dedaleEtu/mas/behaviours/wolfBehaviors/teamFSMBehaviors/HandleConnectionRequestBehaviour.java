@@ -40,8 +40,7 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
                 if (currentTime - timestamp <= 50) { // 检查时间戳是否在50毫秒之内
                     System.out.println(myAgent.getLocalName() + " - Received connection request from " + request.getSender().getLocalName() + " within 50 ms.");
                     ((WolfAgent)this.myAgent).setParent(request.getSender().getLocalName());
-                    ACLMessage reply = request.createReply();
-                    reply.setPerformative(ACLMessage.INFORM);
+                    ACLMessage reply = new ACLMessage(ACLMessage.INFORM);
                     reply.setProtocol("ConnectionResponse");
                     reply.setSender(this.myAgent.getAID());
                     reply.addReceiver(request.getSender());

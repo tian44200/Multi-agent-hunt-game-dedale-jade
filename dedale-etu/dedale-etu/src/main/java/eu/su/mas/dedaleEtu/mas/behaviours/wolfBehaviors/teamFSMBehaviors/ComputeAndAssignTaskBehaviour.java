@@ -25,49 +25,42 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         System.out.println(this.myAgent.getLocalName() + " - ComputeAndAssignTaskBehaviour");
-        if (!wolfAgent.hasChildren()) {
-            if (wolfAgent.getTargetNode() != null) {
+        if (!wolfAgent.hasChildren() && wolfAgent.getTargetNode() != null) {
                 List<String> path = wolfAgent.getMapManager().getMyMap().getShortestPath(wolfAgent.getMyPositionID(), wolfAgent.getTargetNode());
                 if (!path.isEmpty()) {
                     wolfAgent.setNextNode(path.get(0));
                 } else {
                     wolfAgent.setNextNode(null);
                 }
-            } else {
-                computeTargetAndNextNodes();
-            }
-        } else {
-            Map<String, Pair<String, String>> agentTargetNodes = computeTargetAndNextNodes();
-            // 步骤3: 把剩下的Map发给自己的孩子们
-            for (String child : wolfAgent.getChildren()) {
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.setProtocol("Task-Distribution-Protocol"); // 设置协议
-                msg.addReceiver(new AID(child, AID.ISLOCALNAME));
-                msg.setSender(this.myAgent.getAID());
-                try {
-                    msg.setContentObject((Serializable) agentTargetNodes);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
-            }
+                return;
         } 
-    }
-    private Map<String, Pair<String, String>> computeTargetAndNextNodes() {
         Map<String, Pair<String, String>> agentTargetNodes = wolfAgent.getMapManager().computeTargetAndNextNodeForAgent();
-    
         System.out.println(wolfAgent.getMapManager().getObservationMap().getSerializableGraph().toString());
         System.out.println(wolfAgent.getMapManager().getMyMap().getSerializableGraph().toString());
         System.out.println(this.myAgent.getLocalName() + " - All target and next node: " + agentTargetNodes.toString());
         System.out.println(this.myAgent.getLocalName() + " - My target and next node: " + agentTargetNodes.get(wolfAgent.getMyPositionID()));
         System.out.println("My position ID is "+ wolfAgent.getMyPositionID());
-    
         Pair<String, String> myTargetAndPriority = agentTargetNodes.remove(wolfAgent.getMyPositionID());
-        if (myTargetAndPriority != null) {
-            wolfAgent.setTargetAndNextNode(myTargetAndPriority);
-        } else {
-            throw new RuntimeException("myTargetAndPriority is null");
+            if (myTargetAndPriority != null) {
+                wolfAgent.setTargetAndNextNode(myTargetAndPriority);
+            } else {
+                throw new RuntimeException("myTargetAndPriority is null");
+            }
+        if (agentTargetNodes.size() ==1){
+            return;
         }
-        return agentTargetNodes;
+            // 步骤3: 把剩下的Map发给自己的孩子们
+        for (String child : wolfAgent.getChildren()) {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.setProtocol("Task-Distribution-Protocol"); // 设置协议
+            msg.addReceiver(new AID(child, AID.ISLOCALNAME));
+            msg.setSender(this.myAgent.getAID());
+            try {
+                msg.setContentObject((Serializable) agentTargetNodes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
+        }
     }
 }

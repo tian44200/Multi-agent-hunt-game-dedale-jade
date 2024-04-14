@@ -8,6 +8,7 @@ import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.HandleC
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ObserveAfterMoveBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ReportObservationsBehavior;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.RequestConnectionBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.VerifyGolemPosBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.WaitMissionBehaviour;
 import jade.core.behaviours.FSMBehaviour;
 
@@ -47,6 +48,8 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         String EXECUTE_MOVE_BEHAVIOUR = "ExecuteMoveBehaviour";
         registerState(new ExecuteMoveBehaviour(agent), EXECUTE_MOVE_BEHAVIOUR);
 
+        String VERIFY_GOLEM_POS_BEHAVIOUR = "VerifyGolemPosBehaviour";
+        registerState(new VerifyGolemPosBehaviour(agent), VERIFY_GOLEM_POS_BEHAVIOUR);
 
         // 注册状态
         registerDefaultTransition(OBSERVE_AFTER_MOVE_BEHAVIOUR, HANDLE_CONNECTION_REQUEST_BEHAVIOUR);        
@@ -58,10 +61,11 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         registerDefaultTransition(REQUEST_CONNECTION_BEHAVIOUR, HANDLE_CONNECTION_RESPONSE_BEHAVIOUR);
         registerDefaultTransition(HANDLE_CONNECTION_RESPONSE_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR); // 1: 收到至少一个响应
         registerDefaultTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR); // 0: 未收到响应
-        registerDefaultTransition(EXECUTE_MOVE_BEHAVIOUR, OBSERVE_AFTER_MOVE_BEHAVIOUR);
+        registerTransition(EXECUTE_MOVE_BEHAVIOUR, OBSERVE_AFTER_MOVE_BEHAVIOUR,0);
+        registerTransition(EXECUTE_MOVE_BEHAVIOUR, VERIFY_GOLEM_POS_BEHAVIOUR, 1);
+        registerDefaultTransition(VERIFY_GOLEM_POS_BEHAVIOUR, OBSERVE_AFTER_MOVE_BEHAVIOUR);
         
     
-
         // TEST AUTONOMOUS BEHAVIOUR
         // registerDefaultTransition(OBSERVE_AFTER_MOVE_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);
         // registerDefaultTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR);

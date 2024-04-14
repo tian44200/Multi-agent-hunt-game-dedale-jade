@@ -25,9 +25,9 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
         );
         long endTime = System.currentTimeMillis() + 70; // 设置结束时间为当前时间后50毫秒
         boolean received = false;
-        while (System.currentTimeMillis() < endTime && !received) {
+        while (System.currentTimeMillis() < endTime) {
             ACLMessage response = myAgent.receive(mt);
-            if (response != null) {
+            while (response != null) {
                 String senderName = response.getSender().getLocalName();
                 System.out.println(myAgent.getLocalName() + " - Received connection response from " + senderName);
                 ((WolfAgent)this.myAgent).addChild(senderName);
@@ -42,7 +42,9 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
                     System.out.println(myAgent.getLocalName() + " - Error reading content object from response: " + e.getMessage());
 					e.printStackTrace();
 				} 
-            }
+                response = myAgent.receive(mt);
+            } 
+            block(10);
         }
 
         if (!received) {

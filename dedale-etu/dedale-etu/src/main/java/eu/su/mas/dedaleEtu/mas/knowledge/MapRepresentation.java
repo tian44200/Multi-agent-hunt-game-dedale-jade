@@ -31,6 +31,7 @@ import org.graphstream.graph.implementations.Graphs;
 
 import dataStructures.serializableGraph.*;
 import dataStructures.tuple.Couple;
+import jade.core.Agent;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 
@@ -50,7 +51,7 @@ public class MapRepresentation implements Serializable {
 	 */
 
 	public enum MapAttribute {	
-		agent,stenchagent,stench,open,closed;
+		agent,stenchagent,stench,open,closed,golem;
 	}
 
 	private static final long serialVersionUID = -1333959882640838272L;
@@ -270,6 +271,24 @@ public class MapRepresentation implements Serializable {
 		return new ArrayList<>(neighborsSet);
 	}
 	
+	public List<String> getOnlyNeighborNodes(List<String> nodeIds) {
+		Set<String> neighborsSet = new HashSet<>(); // 使用Set来自动去重
+
+		// 遍历每个节点ID
+		for (String nodeId : nodeIds) {
+			Node node = this.g.getNode(nodeId); // 获取对应的Node对象
+			if (node != null) {
+				// 获取每个节点的所有邻居并添加到集合中
+				node.neighborNodes().forEach(neighborNode -> neighborsSet.add(neighborNode.getId()));
+			}
+		}
+
+		// 从集合中删除提供的节点ID
+		neighborsSet.removeAll(nodeIds);
+
+		// 将Set转换为List并返回
+		return new ArrayList<>(neighborsSet);
+	}
 
 	public double calculateNodeScore(String nodeId) {
 		Node node = g.getNode(nodeId); // 从图中获取节点对象
@@ -289,10 +308,13 @@ public class MapRepresentation implements Serializable {
 			visited.add(node.getId());
 	
 			// 获取节点的MapAttribute属性
-			MapAttribute attribute = node.getAttribute("ui.class", MapAttribute.class);
+			String attributeStr = node.getAttribute("ui.class", String.class);
 	
+			if ("golem".equals(attributeStr)) {
+				score += Math.pow(0.5, depth);; // 如果节点是golem
+			}
 			// 如果节点是stench或stenchagent，则根据深度计算分数
-			if (attribute == MapAttribute.stench || attribute == MapAttribute.stenchagent) {
+			if ("stench".equals(attributeStr) || "stenchagent".equals(attributeStr)) {
 				score += Math.pow(0.5, depth);
 			} else {
 				// 如果节点不是stench或stenchagent，则立即返回0分并终止这个探索分支
@@ -309,8 +331,48 @@ public class MapRepresentation implements Serializable {
 		return score;
 	}
 	
+public synchronized List<String> getGolemNodes() {
+	return this.g.nodes()
+		.filter(x -> x.getAttribute("ui.class").equals(MapAttribute.golem.toString()))
+		.map(Node::getId)
+		.collect(Collectors.toList());
+}
+
+public synchronized Map<String, Pair<String, String>> computeBlockPositionsForAgent() {
+	List<String> golemNodes = getGolemNodes();
+	System.out.println("Golem nodes: " + golemNodes); // Debug print
+	if (golemNodes.isEmpty()) {
+		return null;
+	}
+	List<String> agents = getAgentAndStenchAgentNodes();
+	Map<String, Pair<String, String>> agentNodeMap = new HashMap<>();
+	List<String> golemNeighborNodes = getOnlyNeighborNodes(golemNodes);
+	boolean isGolemBlocked = true;
+	for (String node: golemNeighborNodes){
+		Node gNode = this.g.getNode(node);
+		if (!((String) gNode.getAttribute("ui.class")==MapAttribute.agent.toString()) && !((String) gNode.getAttribute("ui.class")==MapAttribute.stenchagent.toString())) {
+			isGolemBlocked = false;
+			break;
+		}
+		agentNodeMap.put(node, new Pair<>(golemNodes.get(0), "block"));
+	}
+	if (isGolemBlocked) {
+		for (String agent : agents) {
+			if (!agentNodeMap.containsKey(agent)) {
+				agentNodeMap.put(agent, new Pair<>(golemNodes.get(0), "disband"));
+			}
+		}
+		return agentNodeMap;
+	} else {
+		return null;
+	}
+}
 
 public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeForAgent() {
+	Map<String, Pair<String, String>> blockPositionsForAgent = computeBlockPositionsForAgent();
+	if (blockPositionsForAgent != null) {
+		return blockPositionsForAgent;
+	}
 	List<String> agents = getAgentAndStenchAgentNodes();
 	System.out.println("Agents: " + agents); // Debug print
 
@@ -386,10 +448,11 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 		agents.remove(closestAgent);
 		System.out.println("Assigned agent " + closestAgent + " to node " + node + " with next node " + nextNode); // Debug print
 	}
-
+	restoreInitialGraph	();
 	System.out.println("Final agent-node map: " + agentNodeMap); // Debug print
 	return agentNodeMap;
 }
+
 
 
 

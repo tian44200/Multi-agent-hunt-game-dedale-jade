@@ -46,6 +46,7 @@ public class WolfAgent extends AbstractDedaleAgent {
 	private String myPositionID;
 	private String targetNode;
 	private String nextNode;
+	private String blockUnknownPos;
 
 	/**
 	 * This method is automatically called when "agent".start() is executed.
@@ -213,6 +214,10 @@ public class WolfAgent extends AbstractDedaleAgent {
 		return targetNode;
 	}
 
+	public void cleanTargetNode() {
+		this.targetNode = null;
+	}
+
 	public String getNextNode() {
 		return nextNode;
 	}
@@ -228,5 +233,17 @@ public class WolfAgent extends AbstractDedaleAgent {
 		if (this.targetNode != null && this.targetNode.equals(this.myPositionID)) {
 			this.targetNode = null;
 		}
+	}
+
+	public void setblockUnknownPos(String blockUnknownPos) {
+		this.blockUnknownPos = blockUnknownPos;
+	}
+	
+	public void resetblockUnknownPos() {
+		this.blockUnknownPos = null;
+	}
+
+	public String getblockUnknownPos() {
+		return blockUnknownPos;
 	}
 }
