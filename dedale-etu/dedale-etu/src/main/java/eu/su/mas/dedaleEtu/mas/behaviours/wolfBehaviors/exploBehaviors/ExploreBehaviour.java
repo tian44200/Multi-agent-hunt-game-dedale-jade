@@ -81,16 +81,16 @@ public class ExploreBehaviour extends SimpleBehaviour {
              * Just added here to let you see what the agent is doing, otherwise he will be too quick
              */
             requestMapInfo();
-            try {
-                // ((SkilledChaseAgent)this.myAgent).setshouldpause(true);
-                this.myAgent.doWait(1000);
-                // Thread.sleep(1000);
-                // ((SkilledChaseAgent)this.myAgent).setshouldpause(false);
-                System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+"WAITED FOR 1s - Position: "+myPosition);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+" - Error in Wait");
-            }
+            // try {
+            //     // ((SkilledChaseAgent)this.myAgent).setshouldpause(true);
+            //     this.myAgent.doWait(1000);
+            //     // Thread.sleep(1000);
+            //     // ((SkilledChaseAgent)this.myAgent).setshouldpause(false);
+            //     System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+"WAITED FOR 1s - Position: "+myPosition);
+            // } catch (Exception e) {
+            //     e.printStackTrace();
+            //     System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+" - Error in Wait");
+            // }
             //1) remove the current node from openlist and add it to closedNodes.
             thisAgent.getMapManager().addNode(myPosition.getLocationId(), MapAttribute.closed);
 

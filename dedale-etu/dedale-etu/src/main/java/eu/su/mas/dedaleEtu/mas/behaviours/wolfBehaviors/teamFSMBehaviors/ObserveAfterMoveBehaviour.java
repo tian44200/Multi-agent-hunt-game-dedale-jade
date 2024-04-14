@@ -23,9 +23,9 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
     public void action() {
         System.out.println(this.myAgent.getLocalName() + " - ObserveAfterMoveBehaviour");
         wolfAgent.getMapManager().getMyMap().restoreInitialGraph();
-        wolfAgent.getMapManager().getCommunicationMap().clearMap();;
         wolfAgent.getMapManager().getObservationMap().clearMap();
         wolfAgent.resetChildren();
+        wolfAgent.resetParent();
         wolfAgent.resetNextNode();
         Location myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
 

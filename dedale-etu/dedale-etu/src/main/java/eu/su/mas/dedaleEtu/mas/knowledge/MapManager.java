@@ -19,7 +19,6 @@ public class MapManager implements Serializable{
 
     private MapRepresentation myMap;
     private Map<String, SerializableSimpleGraph<String, MapAttribute>> staticSubgrapheToShareForAgent;
-    private MapRepresentation communicationMap;
     private MapRepresentation observationMap;
     private String myAgentID;
 
@@ -30,7 +29,6 @@ public class MapManager implements Serializable{
             this.staticSubgrapheToShareForAgent.put(agent, new SerializableSimpleGraph<>());
         }
         System.out.println("Subgraphes created"+this.staticSubgrapheToShareForAgent.toString());
-        this.communicationMap = new MapRepresentation();
         this.observationMap = new MapRepresentation();
     }
 
@@ -123,12 +121,7 @@ public class MapManager implements Serializable{
         // System.out.println("Merging done"+this.myMap.getSerializableGraph().toString());
     }
 
-    public MapRepresentation getCommunicationMap() {
-        return this.communicationMap;
-    }
-    public void cleanCommunicationMap() {
-        this.communicationMap = new MapRepresentation();
-    }
+
 
     public MapRepresentation getObservationMap() {
         return this.observationMap;
@@ -140,21 +133,10 @@ public class MapManager implements Serializable{
 
     public void prepareMigration(){
         this.myMap.prepareMigration();
-        this.communicationMap.prepareMigration();
     }
 
     public void loadSavedData(){
         this.myMap.loadSavedData();
-        this.communicationMap.loadSavedData();
-    }
-
-    public void addDirectCommunication(String agentID) {
-        this.communicationMap.addNewNode(agentID);
-        this.communicationMap.addEdge(myAgentID, agentID);
-    }
-
-    public List<String> getDirectCommunications() {
-        return this.communicationMap.getNeighborsForNode(myAgentID);
     }
 
     public Map<String, Pair<String, String>> computeTargetAndNextNodeForAgent() {

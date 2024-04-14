@@ -25,7 +25,7 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         System.out.println(this.myAgent.getLocalName() + " - ComputeAndAssignTaskBehaviour");
-        if (wolfAgent.getMapManager().getDirectCommunications().isEmpty()) {
+        if (!wolfAgent.hasChildren()) {
             if (wolfAgent.getTargetNode() != null) {
                 List<String> path = wolfAgent.getMapManager().getMyMap().getShortestPath(wolfAgent.getMyPositionID(), wolfAgent.getTargetNode());
                 if (!path.isEmpty()) {
@@ -34,10 +34,10 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
                     wolfAgent.setNextNode(null);
                 }
             } else {
-                computeTargetNodes();
+                computeTargetAndNextNodes();
             }
         } else {
-            Map<String, Pair<String, String>> agentTargetNodes = computeTargetNodes();
+            Map<String, Pair<String, String>> agentTargetNodes = computeTargetAndNextNodes();
             // 步骤3: 把剩下的Map发给自己的孩子们
             for (String child : wolfAgent.getChildren()) {
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -52,19 +52,14 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
                 ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
             }
         } 
-        try {
-            Thread.sleep(3000); // 暂停1秒
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
-    private Map<String, Pair<String, String>> computeTargetNodes() {
+    private Map<String, Pair<String, String>> computeTargetAndNextNodes() {
         Map<String, Pair<String, String>> agentTargetNodes = wolfAgent.getMapManager().computeTargetAndNextNodeForAgent();
     
         System.out.println(wolfAgent.getMapManager().getObservationMap().getSerializableGraph().toString());
         System.out.println(wolfAgent.getMapManager().getMyMap().getSerializableGraph().toString());
-        System.out.println(this.myAgent.getLocalName() + " - All target and priority: " + agentTargetNodes.toString());
-        System.out.println(this.myAgent.getLocalName() + " - My target and priority: " + agentTargetNodes.get(wolfAgent.getMyPositionID()));
+        System.out.println(this.myAgent.getLocalName() + " - All target and next node: " + agentTargetNodes.toString());
+        System.out.println(this.myAgent.getLocalName() + " - My target and next node: " + agentTargetNodes.get(wolfAgent.getMyPositionID()));
         System.out.println("My position ID is "+ wolfAgent.getMyPositionID());
     
         Pair<String, String> myTargetAndPriority = agentTargetNodes.remove(wolfAgent.getMyPositionID());

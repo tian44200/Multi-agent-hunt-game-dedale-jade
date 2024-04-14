@@ -27,10 +27,5 @@ public class ExecuteMoveBehaviour extends OneShotBehaviour {
         } else {
             System.out.println("I don't move for this turn");
         }
-        try {
-            Thread.sleep(1000); // 暂停1秒
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }

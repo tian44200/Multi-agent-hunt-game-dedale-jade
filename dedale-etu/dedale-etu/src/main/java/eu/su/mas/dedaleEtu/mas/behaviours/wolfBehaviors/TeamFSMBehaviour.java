@@ -4,12 +4,11 @@ import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ComputeAndAssignTaskBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ExecuteMoveBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.HandleConnectionRequestBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.HandleConnectionResponseBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ObserveAfterMoveBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ReceiveTaskBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ReportObservationsBehavior;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.RequestConnectionBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.TeamSetUpBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ShareConnectionsBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.WaitMissionBehaviour;
 import jade.core.behaviours.FSMBehaviour;
 
 public class TeamFSMBehaviour extends FSMBehaviour {
@@ -22,22 +21,16 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         String OBSERVE_AFTER_MOVE_BEHAVIOUR = "ObserveAfterMoveBehaviour";
         registerFirstState(new ObserveAfterMoveBehaviour(agent), OBSERVE_AFTER_MOVE_BEHAVIOUR);
         
+        // 收集连接响应
+        String HANDLE_CONNECTION_REQUEST_BEHAVIOUR = "HandleConnectionRequestBehaviour";
+        registerState(new HandleConnectionRequestBehaviour(agent), HANDLE_CONNECTION_REQUEST_BEHAVIOUR);
+        
+        String HANDLE_CONNECTION_RESPONSE_BEHAVIOUR = "HandleConnectionResponseBehaviour";
+        registerState(new HandleConnectionResponseBehaviour(agent), HANDLE_CONNECTION_RESPONSE_BEHAVIOUR);
+        
         // 请求连接
         String REQUEST_CONNECTION_BEHAVIOUR = "RequestConnectionBehaviour";
         registerState(new RequestConnectionBehaviour(agent), REQUEST_CONNECTION_BEHAVIOUR);
-
-        // 收集连接响应
-        String HANDLE_CONNECTION_REQUEST_BEHAVIOUR = "HandleConnectionRequestBehaviour";
-        registerState(new HandleConnectionRequestBehaviour(agent,10000), HANDLE_CONNECTION_REQUEST_BEHAVIOUR);
-        
-
-        // 分享连接信息
-        String SHARE_CONNECTIONS_BEHAVIOUR = "ShareConnectionsBehaviour";
-        registerState(new ShareConnectionsBehaviour(agent,1000), SHARE_CONNECTIONS_BEHAVIOUR);
-
-        // 选举Chef
-        String TEAM_SET_UP_BEHAVIOUR = "TeamSetUpBehaviour";
-        registerState(new TeamSetUpBehaviour(agent), TEAM_SET_UP_BEHAVIOUR);
 
         // 分享观测信息
         String REPORT_OBSERVATIONS_BEHAVIOUR = "ReportObservationsBehavior";
@@ -47,8 +40,8 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         String COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR = "ComputeAndAssignTaskBehaviour";
         registerState(new ComputeAndAssignTaskBehaviour(agent), COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);
 
-        String RECEIVE_TASK_BEHAVIOUR = "ReceiveTaskBehaviour";
-        registerState(new ReceiveTaskBehaviour(agent), RECEIVE_TASK_BEHAVIOUR);
+        String WAIT_MISSION_BEHAVIOUR = "WaitMissionBehaviour";
+        registerState(new WaitMissionBehaviour(agent,1000), WAIT_MISSION_BEHAVIOUR);
         
         // 执行移动
         String EXECUTE_MOVE_BEHAVIOUR = "ExecuteMoveBehaviour";
@@ -56,22 +49,18 @@ public class TeamFSMBehaviour extends FSMBehaviour {
 
 
         // 注册状态
-        registerDefaultTransition(OBSERVE_AFTER_MOVE_BEHAVIOUR, REQUEST_CONNECTION_BEHAVIOUR);        
-        registerDefaultTransition(REQUEST_CONNECTION_BEHAVIOUR, HANDLE_CONNECTION_REQUEST_BEHAVIOUR);
-
-        registerDefaultTransition(HANDLE_CONNECTION_REQUEST_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);
-        registerTransition(HANDLE_CONNECTION_REQUEST_BEHAVIOUR, SHARE_CONNECTIONS_BEHAVIOUR, 1); // 1: 收到至少一个响应
-    
-        registerDefaultTransition(SHARE_CONNECTIONS_BEHAVIOUR, TEAM_SET_UP_BEHAVIOUR); // 0: 未收到响应
-        registerDefaultTransition(TEAM_SET_UP_BEHAVIOUR, REPORT_OBSERVATIONS_BEHAVIOUR); // 0: 未收到响应
+        registerDefaultTransition(OBSERVE_AFTER_MOVE_BEHAVIOUR, HANDLE_CONNECTION_REQUEST_BEHAVIOUR);        
         
-        registerDefaultTransition(REPORT_OBSERVATIONS_BEHAVIOUR, RECEIVE_TASK_BEHAVIOUR);
-        registerTransition(REPORT_OBSERVATIONS_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR,1);
+        registerTransition(HANDLE_CONNECTION_REQUEST_BEHAVIOUR, WAIT_MISSION_BEHAVIOUR, 1); // 1: 收到至少一个响应
+        registerDefaultTransition(WAIT_MISSION_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR);
         
-        registerDefaultTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR);
-        registerDefaultTransition(RECEIVE_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR);
-
+        registerTransition(HANDLE_CONNECTION_REQUEST_BEHAVIOUR, REQUEST_CONNECTION_BEHAVIOUR,0);
+        registerDefaultTransition(REQUEST_CONNECTION_BEHAVIOUR, HANDLE_CONNECTION_RESPONSE_BEHAVIOUR);
+        registerDefaultTransition(HANDLE_CONNECTION_RESPONSE_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR); // 1: 收到至少一个响应
+        registerDefaultTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR); // 0: 未收到响应
         registerDefaultTransition(EXECUTE_MOVE_BEHAVIOUR, OBSERVE_AFTER_MOVE_BEHAVIOUR);
+        
+    
 
         // TEST AUTONOMOUS BEHAVIOUR
         // registerDefaultTransition(OBSERVE_AFTER_MOVE_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);

@@ -143,6 +143,10 @@ public class WolfAgent extends AbstractDedaleAgent {
 		return parent;
 	}
 
+	public void resetParent(){
+		this.parent = null;
+	}
+
 	public void addChild(String child) {
         childrenIDs.add(child);
     }
@@ -191,9 +195,6 @@ public class WolfAgent extends AbstractDedaleAgent {
 		return myPositionID;
 	}
 
-	public boolean isChef() {
-		return this.mapManager.getCommunicationMap().getChefID().equals(this.getLocalName());
-	}
 
 	public void setTargetAndNextNode(Pair<String, String> targetAndNextNode) {
 		if (targetAndNextNode == null) {

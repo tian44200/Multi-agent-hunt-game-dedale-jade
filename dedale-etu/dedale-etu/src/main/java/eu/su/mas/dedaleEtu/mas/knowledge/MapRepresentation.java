@@ -513,10 +513,13 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 						newnode.setAttribute("ui.class",MapAttribute.closed.toString());
 					}
 				}
-				else{
+				else {
 					System.out.println("Explore finished for MapRepresentation, merge the variante node content.");
 					System.out.println("Node"+ n.toString()+ "Content "+ n.getNodeContent().toString());
-					newnode.setAttribute("ui.class", n.getNodeContent().toString());
+					String currentAttribute = (String) newnode.getAttribute("ui.class");
+					if (!(currentAttribute.equals(MapAttribute.agent.toString()) || currentAttribute.equals(MapAttribute.stenchagent.toString()))) {
+						newnode.setAttribute("ui.class", n.getNodeContent().toString());
+					}
 				}
 				
 			}
