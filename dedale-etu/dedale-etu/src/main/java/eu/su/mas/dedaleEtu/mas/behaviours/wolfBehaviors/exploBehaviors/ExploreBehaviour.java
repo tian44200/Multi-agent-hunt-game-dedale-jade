@@ -14,6 +14,7 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
+import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.RespondPositionBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.TeamFSMBehaviour;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -114,6 +115,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
                 this.myAgent.removeBehaviour(this.mergeMapBehaviour);
                 thisAgent.setExplorefinished(true);
                 thisAgent.getMapManager().getMyMap().saveInitialGraph();
+                // this.myAgent.addBehaviour(new RespondPositionBehaviour(thisAgent));
                 this.myAgent.addBehaviour(new TeamFSMBehaviour(thisAgent));
                 //Explo finished
                 System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");

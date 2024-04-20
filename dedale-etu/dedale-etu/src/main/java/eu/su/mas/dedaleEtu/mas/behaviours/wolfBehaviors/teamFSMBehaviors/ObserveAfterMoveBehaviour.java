@@ -27,6 +27,12 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
         wolfAgent.resetChildren();
         wolfAgent.resetParent();
         wolfAgent.resetNextNode();
+
+        String blockUnknownPos = wolfAgent.getblockUnknownPos();
+        if (blockUnknownPos!= null) {
+            wolfAgent.getMapManager().getObservationMap().addNode(blockUnknownPos, MapAttribute.golem);
+        }
+        wolfAgent.checkArriveTarget();
         Location myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
 
         if (myPosition != null) {
@@ -42,15 +48,17 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
                 // Examine the observations at this location
                 for (Couple<Observation, Integer> detail : obs.getRight()) {
                     if (detail.getLeft() == Observation.STENCH) {
+                        stenchDetected = true;
                         // If stench is detected, check if the location is the current position
                         if (location.equals(myPosition)) {
                             // If it is, mark the node as having a stenchagent attribute
                             wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stenchagent);
-                        } else {
-                            // If it's not, mark the node as having a stench attribute
-                            wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stench);
+                            break;
+                        } 
+                        if (location.getLocationId()==blockUnknownPos){
+                            break;
                         }
-                        stenchDetected = true;
+                        wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stench);
                         break; // Stench detected, no need to check further
                     }
                 }
@@ -66,11 +74,6 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
                     }
                 }
             }
-            String blockUnknownPos = wolfAgent.getblockUnknownPos();
-            if (blockUnknownPos!= null) {
-                wolfAgent.getMapManager().getObservationMap().addNode(blockUnknownPos, MapAttribute.golem);
-            }
-            wolfAgent.checkArriveTarget();
         }
     }
 }

@@ -5,9 +5,8 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 
-import java.io.Serializable;
-
 import dataStructures.serializableGraph.SerializableSimpleGraph;
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
@@ -23,7 +22,7 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
             MessageTemplate.MatchPerformative(ACLMessage.INFORM),
             MessageTemplate.MatchProtocol("ConnectionResponse")
         );
-        long endTime = System.currentTimeMillis() + 70; // 设置结束时间为当前时间后50毫秒
+        long endTime = System.currentTimeMillis() + 55; // 设置结束时间为当前时间后50毫秒
         boolean received = false;
         while (System.currentTimeMillis() < endTime) {
             ACLMessage response = myAgent.receive(mt);
@@ -37,6 +36,13 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
                     System.out.println(myAgent.getLocalName() + " - Received content object: " + sgReceived);
                     ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
 
+                    // 发送确认消息
+                    ACLMessage confirm = new ACLMessage(ACLMessage.CONFIRM);
+                    confirm.setProtocol("ConnectionConfirm");
+                    confirm.addReceiver(response.getSender());
+                    confirm.setSender(this.myAgent.getAID());
+                    ((AbstractDedaleAgent)myAgent).sendMessage(confirm);
+                    
                 } catch (UnreadableException e) {
 					// TODO Auto-generated catch block
                     System.out.println(myAgent.getLocalName() + " - Error reading content object from response: " + e.getMessage());

@@ -9,7 +9,6 @@ import javafx.util.Pair;
 public class ExecuteMoveBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 1L;
     private WolfAgent wolfAgent;
-    private boolean moveFailed = false;
     private int onEndValue = 0;
 
     public ExecuteMoveBehaviour(WolfAgent a) {
@@ -38,7 +37,7 @@ public class ExecuteMoveBehaviour extends OneShotBehaviour {
             if (((AbstractDedaleAgent)this.myAgent).moveTo(new gsLocation(nextNode))) {
                 System.out.println(this.myAgent.getLocalName() + " - I move to " + nextNode);
             } else {
-                moveFailed = true;
+                wolfAgent.setblockUnknownPos(nextNode);
                 System.out.println(this.myAgent.getLocalName() + " - I failed to move to " + nextNode);
             };
         } else {
@@ -48,11 +47,7 @@ public class ExecuteMoveBehaviour extends OneShotBehaviour {
 
     @Override
     public int onEnd() {
-        if (moveFailed) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return onEndValue;
     }
 
 }

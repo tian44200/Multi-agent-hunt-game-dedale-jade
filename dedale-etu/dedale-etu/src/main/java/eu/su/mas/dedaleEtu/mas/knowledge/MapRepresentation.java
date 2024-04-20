@@ -51,7 +51,7 @@ public class MapRepresentation implements Serializable {
 	 */
 
 	public enum MapAttribute {	
-		agent,stenchagent,stench,open,closed,golem;
+		agent,stenchagent,stench,open,closed,golem,blocker;
 	}
 
 	private static final long serialVersionUID = -1333959882640838272L;
@@ -186,6 +186,26 @@ public class MapRepresentation implements Serializable {
 		return shortestPath;
 	}
 
+	public synchronized List<String> getShortestPathInitialG(String idFrom,String idTo){
+		List<String> shortestPath=new ArrayList<String>();
+
+		Dijkstra dijkstra = new Dijkstra();//number of edge
+		dijkstra.init(g_initial);
+		dijkstra.setSource(g_initial.getNode(idFrom));
+		dijkstra.compute();//compute the distance to all nodes from idFrom
+		List<Node> path=dijkstra.getPath(g_initial.getNode(idTo)).getNodePath(); //the shortest path from idFrom to idTo
+		Iterator<Node> iter=path.iterator();
+		while (iter.hasNext()){
+			shortestPath.add(iter.next().getId());
+		}
+		dijkstra.clear();
+		if (shortestPath.isEmpty()) {//The openNode is not currently reachable
+			return null;
+		}else {
+			shortestPath.remove(0);//remove the current position
+		}
+		return shortestPath;
+	}
 	public List<String> getShortestPathToClosestOpenNode(String myPosition) {
 		//1) Get all openNodes
 		List<String> opennodes=getOpenNodes();
@@ -201,6 +221,8 @@ public class MapRepresentation implements Serializable {
 
 		return getShortestPath(myPosition,closest.get().getLeft());
 	}
+
+	
 
 	public void setMaxHashChef() {
 		String MaxHash = this.g.nodes()
@@ -309,18 +331,18 @@ public class MapRepresentation implements Serializable {
 	
 			// 获取节点的MapAttribute属性
 			String attributeStr = node.getAttribute("ui.class", String.class);
+			
+			if ("agent".equals(attributeStr) || "closed".equals(attributeStr)) {
+				return 0.0;
+			}
 	
 			if ("golem".equals(attributeStr)) {
 				score += Math.pow(0.5, depth);; // 如果节点是golem
 			}
 			// 如果节点是stench或stenchagent，则根据深度计算分数
 			if ("stench".equals(attributeStr) || "stenchagent".equals(attributeStr)) {
-				score += Math.pow(0.5, depth);
-			} else {
-				// 如果节点不是stench或stenchagent，则立即返回0分并终止这个探索分支
-				return 0.0;
+				score += Math.pow(0.5, depth+1);
 			}
-	
 			// 对所有邻居节点递归调用dfsCalculateScore
 			for (Edge edge : node.leavingEdges().collect(Collectors.toList())) {
 				Node nextNode = edge.getOpposite(node);
@@ -336,6 +358,21 @@ public synchronized List<String> getGolemNodes() {
 		.filter(x -> x.getAttribute("ui.class").equals(MapAttribute.golem.toString()))
 		.map(Node::getId)
 		.collect(Collectors.toList());
+}
+
+public synchronized boolean areGolemsBlocked() {
+	List<String> golemNodes = getGolemNodes();
+	if (golemNodes.isEmpty()) {
+		return false;
+	}
+	List<String> golemNeighborNodes = getOnlyNeighborNodes(golemNodes);
+	for (String node: golemNeighborNodes){
+		Node gNode = this.g.getNode(node);
+		if (!((String) gNode.getAttribute("ui.class")==MapAttribute.agent.toString()) && !((String) gNode.getAttribute("ui.class")==MapAttribute.stenchagent.toString())) {
+			return false;
+		}
+	}
+	return true;
 }
 
 public synchronized Map<String, Pair<String, String>> computeBlockPositionsForAgent() {
@@ -416,7 +453,6 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 		})
 		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 	System.out.println("Sorted node scores: " + nodeScores); // Debug print
-
 	Map<String, Pair<String, String>> agentNodeMap = new HashMap<>();
 	for (Map.Entry<String, Double> entry : nodeScores.entrySet()) {
 		if (agents.isEmpty()) {
@@ -428,7 +464,13 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 		List<String> shortestPath = null;
 
 		for (String agent : agents) {
-			List<String> path = getShortestPath(agent, node);
+			List<String> path = null;
+			if (g.getNode(node) == null){
+				path = getShortestPathInitialG(agent, node);
+			} else {
+				path = getShortestPath(agent, node);
+			}
+			
 			System.out.println("Shortest path from agent " + agent + " to node " + node + ": " + path); // Debug print
 
 			if (shortestPath == null || path.size() < shortestPath.size()) {
@@ -440,22 +482,61 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 		String nextNode = null;
 		if (!shortestPath.isEmpty()) {
 			nextNode = shortestPath.get(0);
-			g.removeNode(nextNode); // remove the nextNode from the graph
-			System.out.println("Removed node " + nextNode + " from the graph"); // Debug print
+			if (g.getNode(nextNode) == null){
+				g.removeNode(nextNode); // remove the nextNode from the graph
+				System.out.println("Removed node " + nextNode + " from the graph"); // Debug print
+			}
 		}
-		
-		agentNodeMap.put(closestAgent, new Pair<>(node, nextNode));
-		agents.remove(closestAgent);
-		System.out.println("Assigned agent " + closestAgent + " to node " + node + " with next node " + nextNode); // Debug print
+		if (closestAgent != null) {
+			agentNodeMap.put(closestAgent, new Pair<>(node, nextNode));
+			agents.remove(closestAgent);
+			System.out.println("Assigned agent " + closestAgent + " to node " + node + " with next node " + nextNode); // Debug print
+		}
 	}
 	restoreInitialGraph	();
 	System.out.println("Final agent-node map: " + agentNodeMap); // Debug print
 	return agentNodeMap;
 }
 
+public synchronized String computeNextNodeForDisband(String myPosition, String targetNode){
+	List<String> neighbors = getNeighborNodes(myPosition);
+	System.out.println("Neighbors of agent " + myPosition + ": " + neighbors); // Debug print
 
+	Dijkstra dijkstra = new Dijkstra();
+	dijkstra.init(g);
+	dijkstra.setSource(g.getNode(targetNode));
+	dijkstra.compute();
 
+	Node myNode = g.getNode(myPosition);
+	double myDistance = dijkstra.getPathLength(myNode);
 
+	String farthestNeighbor = null;
+	double maxDistance = Double.MIN_VALUE;
+
+	for (String neighbor : neighbors) {
+		Node neighborNode = g.getNode(neighbor);
+		double distance = dijkstra.getPathLength(neighborNode);
+		if (distance > maxDistance && distance > myDistance) {
+			maxDistance = distance;
+			farthestNeighbor = neighbor;
+		}
+	}
+
+	dijkstra.clear();
+
+	return farthestNeighbor;
+}
+
+public boolean hasGolemNodeOnMap() {
+	Iterator<Node> iter = this.g.iterator();
+	while(iter.hasNext()){
+		Node node = iter.next();
+		if (node.getAttribute("MapAttribute").toString().equals(MapAttribute.golem.toString())) {
+			return true;
+		}
+	}
+	return false;
+}
 	/**
 	 * Before the migration we kill all non serializable components and store their data in a serializable form
 	 */
@@ -581,12 +662,13 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 					System.out.println("Node"+ n.toString()+ "Content "+ n.getNodeContent().toString());
 					String currentAttribute = (String) newnode.getAttribute("ui.class");
 					if (!(currentAttribute.equals(MapAttribute.agent.toString()) || currentAttribute.equals(MapAttribute.stenchagent.toString()))) {
-						newnode.setAttribute("ui.class", n.getNodeContent().toString());
+						if (!(currentAttribute.equals(MapAttribute.golem.toString()))) {
+							newnode.setAttribute("ui.class", n.getNodeContent().toString());
 					}
 				}
-				
 			}
 		}
+	}
 
 		//4 now that all nodes are added, we can add edges
 		for (SerializableNode<String, MapAttribute> n: sgreceived.getAllNodes()){

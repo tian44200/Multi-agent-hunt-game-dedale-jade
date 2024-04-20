@@ -2,7 +2,7 @@
 { 
   "agentType":"agentExplo",
   "agentName": "Wolf1",
-  "communicationRange": 3,
+  "communicationRange": 4,
   "initialLocation": "free",
   "backPackCapacityGold": -1,
   "backPackCapacityDiamond":-1, 
@@ -24,7 +24,7 @@
   { 
   "agentType":"agentExplo",
   "agentName": "Wolf3",
-  "communicationRange": 3,
+  "communicationRange": 2,
   "initialLocation": "free",
   "backPackCapacityGold": -1,
   "backPackCapacityDiamond":-1, 

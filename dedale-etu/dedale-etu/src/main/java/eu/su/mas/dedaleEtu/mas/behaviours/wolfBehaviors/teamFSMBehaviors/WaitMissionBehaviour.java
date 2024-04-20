@@ -37,8 +37,7 @@ public class WaitMissionBehaviour extends OneShotBehaviour {
         boolean received = false;
 
         System.out.println(this.myAgent.getLocalName() + " - Waiting for mission");
-        MessageTemplate mt = MessageTemplate.MatchProtocol("Task-Distribution-Protocol");
-
+        MessageTemplate mt = MessageTemplate.and(MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchProtocol("Task-Distribution-Protocol")),MessageTemplate.MatchSender(new AID(wolfAgent.getParent(), AID.ISLOCALNAME)));
         while (System.currentTimeMillis() < endTime && !received) {
             ACLMessage msg = myAgent.receive(mt);
             if (msg != null && msg.getSender().getLocalName().equals(wolfAgent.getParent())) {

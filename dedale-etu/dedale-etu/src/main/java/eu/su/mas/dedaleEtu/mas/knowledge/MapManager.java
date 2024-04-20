@@ -9,6 +9,8 @@ import java.io.Serializable;
 
 import java.util.Set;
 
+import org.netlib.util.booleanW;
+
 import dataStructures.serializableGraph.*;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import jade.core.AID;
@@ -20,7 +22,7 @@ public class MapManager implements Serializable{
     private MapRepresentation myMap;
     private Map<String, SerializableSimpleGraph<String, MapAttribute>> staticSubgrapheToShareForAgent;
     private MapRepresentation observationMap;
-    private String myAgentID;
+    private boolean explorefinished;
 
     public MapManager(MapRepresentation myMap, List<String> agents) {
     	this.myMap = myMap;
@@ -94,6 +96,10 @@ public class MapManager implements Serializable{
         // System.out.println("MyMap before merging "+this.myMap.getSerializableGraph().toString());
         // System.out.println("Merging received subgraph"+sgreceived.toString());
         // Merge the received subgraph into each agent's subgraph
+        if (explorefinished){
+            this.myMap.mergeMap(sgreceived);
+            return;
+        }
         for (SerializableSimpleGraph<String, MapAttribute> subgraph : this.staticSubgrapheToShareForAgent.values()) {
             // Merge nodes
             if (subgraph.equals(this.staticSubgrapheToShareForAgent.get(senderID))) {
@@ -115,8 +121,7 @@ public class MapManager implements Serializable{
                 }
             }
         }
-        // Also merge the received subgraph into the main MapRepresentation
-        this.myMap.mergeMap(sgreceived);
+
         // System.out.println("Merging done"+this.staticSubgrapheToShareForAgent.toString());
         // System.out.println("Merging done"+this.myMap.getSerializableGraph().toString());
     }
@@ -142,6 +147,10 @@ public class MapManager implements Serializable{
     public Map<String, Pair<String, String>> computeTargetAndNextNodeForAgent() {
         this.myMap.mergeMap(this.observationMap.getSerializableGraph());
         return this.myMap.computeTargetAndNextNodeForAgent();
+    }
+
+    public void setExplorefinished(boolean explorefinished) {
+        this.explorefinished = explorefinished;
     }
 }
 

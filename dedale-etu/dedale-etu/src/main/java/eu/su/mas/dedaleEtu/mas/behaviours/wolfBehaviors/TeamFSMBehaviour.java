@@ -1,12 +1,12 @@
 package eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors;
 
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
+import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.BlockingGolemBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ComputeAndAssignTaskBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ExecuteMoveBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.HandleConnectionRequestBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.HandleConnectionResponseBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ObserveAfterMoveBehaviour;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.ReportObservationsBehavior;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.RequestConnectionBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.VerifyGolemPosBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.teamFSMBehaviors.WaitMissionBehaviour;
@@ -33,10 +33,6 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         String REQUEST_CONNECTION_BEHAVIOUR = "RequestConnectionBehaviour";
         registerState(new RequestConnectionBehaviour(agent), REQUEST_CONNECTION_BEHAVIOUR);
 
-        // 分享观测信息
-        String REPORT_OBSERVATIONS_BEHAVIOUR = "ReportObservationsBehavior";
-        registerState(new ReportObservationsBehavior(agent), REPORT_OBSERVATIONS_BEHAVIOUR);
-
         // 计算并分配任务（仅限Chef）
         String COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR = "ComputeAndAssignTaskBehaviour";
         registerState(new ComputeAndAssignTaskBehaviour(agent), COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);
@@ -51,6 +47,9 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         String VERIFY_GOLEM_POS_BEHAVIOUR = "VerifyGolemPosBehaviour";
         registerState(new VerifyGolemPosBehaviour(agent), VERIFY_GOLEM_POS_BEHAVIOUR);
 
+        String BLOCKING_GOLEM_BEHAVIOUR = "BlockingGolemBehaviour";
+        registerState(new BlockingGolemBehaviour(agent), BLOCKING_GOLEM_BEHAVIOUR);
+
         // 注册状态
         registerDefaultTransition(OBSERVE_AFTER_MOVE_BEHAVIOUR, HANDLE_CONNECTION_REQUEST_BEHAVIOUR);        
         
@@ -60,10 +59,13 @@ public class TeamFSMBehaviour extends FSMBehaviour {
         registerTransition(HANDLE_CONNECTION_REQUEST_BEHAVIOUR, REQUEST_CONNECTION_BEHAVIOUR,0);
         registerDefaultTransition(REQUEST_CONNECTION_BEHAVIOUR, HANDLE_CONNECTION_RESPONSE_BEHAVIOUR);
         registerDefaultTransition(HANDLE_CONNECTION_RESPONSE_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR); // 1: 收到至少一个响应
-        registerDefaultTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR); // 0: 未收到响应
+        registerTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, EXECUTE_MOVE_BEHAVIOUR,0); // 0: 未收到响应
+        registerTransition(COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR, VERIFY_GOLEM_POS_BEHAVIOUR,1);
+        registerDefaultTransition(VERIFY_GOLEM_POS_BEHAVIOUR, COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);
+
         registerTransition(EXECUTE_MOVE_BEHAVIOUR, OBSERVE_AFTER_MOVE_BEHAVIOUR,0);
-        registerTransition(EXECUTE_MOVE_BEHAVIOUR, VERIFY_GOLEM_POS_BEHAVIOUR, 1);
-        registerDefaultTransition(VERIFY_GOLEM_POS_BEHAVIOUR, OBSERVE_AFTER_MOVE_BEHAVIOUR);
+
+        registerTransition(EXECUTE_MOVE_BEHAVIOUR, BLOCKING_GOLEM_BEHAVIOUR,1);
         
     
         // TEST AUTONOMOUS BEHAVIOUR
