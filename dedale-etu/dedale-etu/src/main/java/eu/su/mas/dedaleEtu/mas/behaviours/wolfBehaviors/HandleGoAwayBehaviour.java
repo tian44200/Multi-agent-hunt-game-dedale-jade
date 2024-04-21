@@ -28,7 +28,7 @@ public void action() {
     if (msg != null) {
         System.out.println(myAgent.getLocalName() + " - Received 'GoAway' message.");
         try {
-                    SerializableSimpleGraph<String, MapAttribute> sgReceived = (SerializableSimpleGraph) response.getContentObject();
+                    SerializableSimpleGraph<String, MapAttribute> sgReceived = (SerializableSimpleGraph) msg.getContentObject();
                     System.out.println(myAgent.getLocalName() + " - Received content object: " + sgReceived);
                     ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
         } catch (UnreadableException e) {

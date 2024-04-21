@@ -51,7 +51,7 @@ public class MapRepresentation implements Serializable {
 	 */
 
 	public enum MapAttribute {	
-		agent,stenchagent,stench,open,closed,golem,blocker;
+		agent,stenchagent,stench,open,closed,golem,block;
 	}
 
 	private static final long serialVersionUID = -1333959882640838272L;
@@ -537,6 +537,7 @@ public boolean hasGolemNodeOnMap() {
 	}
 	return false;
 }
+
 	/**
 	 * Before the migration we kill all non serializable components and store their data in a serializable form
 	 */

@@ -125,7 +125,19 @@ public class MapManager implements Serializable{
         // System.out.println("Merging done"+this.staticSubgrapheToShareForAgent.toString());
         // System.out.println("Merging done"+this.myMap.getSerializableGraph().toString());
     }
+    public SerializableSimpleGraph<String, MapAttribute> getBlockObservationGraph(List<String> agents){
+        SerializableSimpleGraph<String, MapAttribute> newObservationGraph = new SerializableSimpleGraph<>();
 
+        for (SerializableNode<String, MapAttribute> node : this.observationMap.getSerializableGraph().getAllNodes()) {
+            if (node.getNodeContent() == MapAttribute.golem || agents.contains(node.getNodeId())) {
+                newObservationGraph.addNode(node.getNodeId(), MapAttribute.block);
+            }
+        }
+
+        this.observationMap = new MapRepresentation();
+        this.observationMap.mergeMap(newObservationGraph);
+        return newObservationGraph;
+    }
 
 
     public MapRepresentation getObservationMap() {

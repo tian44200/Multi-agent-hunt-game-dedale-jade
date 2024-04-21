@@ -22,6 +22,10 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
             MessageTemplate.MatchPerformative(ACLMessage.INFORM),
             MessageTemplate.MatchProtocol("ConnectionResponse")
         );
+        MessageTemplate mtGoAway = MessageTemplate.and(
+            MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+            MessageTemplate.MatchProtocol("GoAway")
+        );
         long endTime = System.currentTimeMillis() + 55; // 设置结束时间为当前时间后50毫秒
         boolean received = false;
         while (System.currentTimeMillis() < endTime) {
@@ -34,7 +38,7 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
                 try {
                     SerializableSimpleGraph<String, MapAttribute> sgReceived = (SerializableSimpleGraph) response.getContentObject();
                     System.out.println(myAgent.getLocalName() + " - Received content object: " + sgReceived);
-                    ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
+                    ((WolfAgent)this.myAgent).getMapManager().getObservationMap().mergeMap(sgReceived);
 
                     // 发送确认消息
                     ACLMessage confirm = new ACLMessage(ACLMessage.CONFIRM);
@@ -50,6 +54,25 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
 				} 
                 response = myAgent.receive(mt);
             } 
+
+            // 接收匹配 "GoAway" 的消息
+            ACLMessage goAwayMsg = myAgent.receive(mtGoAway);
+            if (goAwayMsg != null) {
+                SerializableSimpleGraph<String, MapAttribute> sgReceived = null;
+                try {
+                    sgReceived = (SerializableSimpleGraph<String, MapAttribute>) goAwayMsg.getContentObject();
+                    ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // 回复一个 "GoAwayConfirm" 消息
+                ACLMessage reply = new ACLMessage(ACLMessage.CONFIRM);
+                reply.setProtocol("GoAwayConfirm");
+                reply.addReceiver(goAwayMsg.getSender());
+                reply.setSender(this.myAgent.getAID());
+                ((AbstractDedaleAgent) myAgent).sendMessage(reply);
+                System.out.println(myAgent.getLocalName() + " - Responded with 'GoAwayConfirm' message.");
+            }
             block(10);
         }
 

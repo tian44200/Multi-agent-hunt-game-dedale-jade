@@ -44,8 +44,12 @@ public class WaitMissionBehaviour extends OneShotBehaviour {
                 received = true;
                 try {
                     Map<String, Pair<String, String>> agentTargets = (Map<String, Pair<String, String>>) msg.getContentObject();
-                    Pair<String, String> myTargetAndPriority = agentTargets.remove(wolfAgent.getMyPositionID());
+                    Pair<String, String> myTargetAndPriority = agentTargets.get(wolfAgent.getMyPositionID());
                     wolfAgent.setTargetAndNextNode(myTargetAndPriority);
+                    if (myTargetAndPriority != null && myTargetAndPriority.getValue() != "block"){
+                        System.out.println(this.myAgent.getLocalName() + " - Received mission from " + msg.getSender().getLocalName() + " with target " + myTargetAndPriority.getKey());
+                        
+                    }
                     System.out.println(myAgent.getLocalName() + " - Received mission from " + msg.getSender().getLocalName());
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -55,13 +55,18 @@ public class VerifyGolemPosBehaviour extends OneShotBehaviour {
                 try {
                     SerializableSimpleGraph<String, MapAttribute> sgReceived = (SerializableSimpleGraph) response.getContentObject();
                     System.out.println(myAgent.getLocalName() + " - Received golem object: " + sgReceived);
-                    ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
-
+                    ((WolfAgent)this.myAgent).getMapManager().getObservationMap().mergeMap(sgReceived);
                 } catch (UnreadableException e) {
 					// TODO Auto-generated catch block
                     System.out.println(myAgent.getLocalName() + " - Error reading content object from response: " + e.getMessage());
 					e.printStackTrace();
 				} 
+                // 发送确认消息
+                ACLMessage confirm = new ACLMessage(ACLMessage.CONFIRM);
+                confirm.setProtocol("ConnectionConfirm");
+                confirm.addReceiver(response.getSender());
+                confirm.setSender(this.myAgent.getAID());
+                ((AbstractDedaleAgent)myAgent).sendMessage(confirm);
                 response = myAgent.receive(mt);
             } 
             block(10);

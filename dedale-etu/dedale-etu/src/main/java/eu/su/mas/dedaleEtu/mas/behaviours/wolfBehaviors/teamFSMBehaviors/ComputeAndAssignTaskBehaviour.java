@@ -7,6 +7,7 @@ import javafx.util.Pair;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
         System.out.println(this.myAgent.getLocalName() + " - ComputeAndAssignTaskBehaviour");
         if (wolfAgent.isDisband()) {
             System.out.println(this.myAgent.getLocalName() + " - Disbanding");
-            if (wolfAgent.getMapManager().getMyMap().hasGolemNodeOnMap()){
+            if (wolfAgent.getMapManager().getObservationMap().hasGolemNodeOnMap()){
                 System.out.println(this.myAgent.getLocalName() + " - Disbanding with golem");
                 Map<String, Pair<String, String>> agentTargetNodes = wolfAgent.getMapManager().computeTargetAndNextNodeForAgent();
                 Pair<String, String> myTargetAndPriority = agentTargetNodes.get(wolfAgent.getMyPositionID());                
@@ -56,13 +57,14 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
                 wolfAgent.setNextNode(null);
             }
             return;
-        } 
+        }
         if (wolfAgent.getMapManager().getMyMap().areGolemsBlocked() && wolfAgent.getVerifyGolem() == false){
             System.out.println(this.myAgent.getLocalName() + " - Golem is blocked");
             onEndValue = 1;
             wolfAgent.setVerifyGolem(true);
             return;
         }
+
         Map<String, Pair<String, String>> agentTargetNodes = wolfAgent.getMapManager().computeTargetAndNextNodeForAgent();
         System.out.println(wolfAgent.getMapManager().getObservationMap().getSerializableGraph().toString());
         System.out.println(wolfAgent.getMapManager().getMyMap().getSerializableGraph().toString());
@@ -71,9 +73,10 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
         System.out.println("My position ID is "+ wolfAgent.getMyPositionID());
         Pair<String, String> myTargetAndPriority = agentTargetNodes.get(wolfAgent.getMyPositionID());        
         wolfAgent.setTargetAndNextNode(myTargetAndPriority);
-        if (agentTargetNodes.size() ==0){
+        if (agentTargetNodes.size() ==1){
             return;
         }
+
         System.out.println(this.myAgent.getLocalName() + " - I send mission to children" + wolfAgent.getChildren().toString());
             // 步骤3: 把剩下的Map发给自己的孩子们
         for (String child : wolfAgent.getChildren()) {
@@ -87,6 +90,21 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
                 e.printStackTrace();
             }
             ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
+        }
+        if (wolfAgent.getMapManager().getMyMap().areGolemsBlocked()){
+            for (String child : wolfAgent.getChildren()) {
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.setProtocol("block-map"); // 设置协议
+                msg.addReceiver(new AID(child, AID.ISLOCALNAME));
+                msg.setSender(this.myAgent.getAID());
+                try {
+                    List<String> list = new ArrayList<>(agentTargetNodes.keySet());
+                    msg.setContentObject(((WolfAgent)this.myAgent).getMapManager().getBlockObservationGraph(list));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ((AbstractDedaleAgent)this.myAgent).sendMessage(msg);
+            }
         }
         wolfAgent.setblockUnknownPos(null);
         wolfAgent.setVerifyGolem(false);
