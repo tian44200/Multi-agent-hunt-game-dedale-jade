@@ -396,7 +396,7 @@ public synchronized Map<String, Pair<String, String>> computeBlockPositionsForAg
 	if (isGolemBlocked) {
 		for (String agent : agents) {
 			if (!agentNodeMap.containsKey(agent)) {
-				agentNodeMap.put(agent, new Pair<>(golemNodes.get(0), "disband"));
+				agentNodeMap.put(agent, new Pair<>(null, null));
 			}
 		}
 		return agentNodeMap;
@@ -496,35 +496,6 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 	restoreInitialGraph	();
 	System.out.println("Final agent-node map: " + agentNodeMap); // Debug print
 	return agentNodeMap;
-}
-
-public synchronized String computeNextNodeForDisband(String myPosition, String targetNode){
-	List<String> neighbors = getNeighborNodes(myPosition);
-	System.out.println("Neighbors of agent " + myPosition + ": " + neighbors); // Debug print
-
-	Dijkstra dijkstra = new Dijkstra();
-	dijkstra.init(g);
-	dijkstra.setSource(g.getNode(targetNode));
-	dijkstra.compute();
-
-	Node myNode = g.getNode(myPosition);
-	double myDistance = dijkstra.getPathLength(myNode);
-
-	String farthestNeighbor = null;
-	double maxDistance = Double.MIN_VALUE;
-
-	for (String neighbor : neighbors) {
-		Node neighborNode = g.getNode(neighbor);
-		double distance = dijkstra.getPathLength(neighborNode);
-		if (distance > maxDistance && distance > myDistance) {
-			maxDistance = distance;
-			farthestNeighbor = neighbor;
-		}
-	}
-
-	dijkstra.clear();
-
-	return farthestNeighbor;
 }
 
 public boolean hasGolemNodeOnMap() {

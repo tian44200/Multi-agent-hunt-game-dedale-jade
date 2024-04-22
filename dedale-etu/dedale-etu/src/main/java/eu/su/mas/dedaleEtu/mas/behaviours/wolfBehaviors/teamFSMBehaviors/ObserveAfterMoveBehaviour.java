@@ -32,11 +32,11 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
         if (blockUnknownPos!= null) {
             wolfAgent.getMapManager().getObservationMap().addNode(blockUnknownPos, MapAttribute.golem);
         }
-        wolfAgent.checkArriveTarget();
         Location myPosition = ((AbstractDedaleAgent) this.myAgent).getCurrentPosition();
 
         if (myPosition != null) {
             wolfAgent.setMyPositionID(myPosition.getLocationId());
+            wolfAgent.checkArriveTarget();
             List<Couple<Location, List<Couple<Observation, Integer>>>> lobs = 
                 ((AbstractDedaleAgent) wolfAgent).observe(); //myPosition
 

@@ -14,7 +14,6 @@ import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.RespondPositionBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.TeamFSMBehaviour;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -23,28 +22,26 @@ import jade.core.AID;
 
 
 /**
- * <pre>
  * This behaviour allows an agent to explore the environment and learn the associated topological map.
- * The algorithm is a pseudo - DFS computationally consuming because its not optimised at all.
+ * The algorithm is a pseudo - Depth-First Search (DFS) which is computationally consuming because it's not optimised.
  * 
- * When all the nodes around him are visited, the agent randomly select an open node and go there to restart its dfs. 
- * This (non optimal) behaviour is done until all nodes are explored. 
+ * When all the nodes around the agent are visited, the agent randomly selects an open node and goes there to restart its DFS. 
+ * This (non-optimal) behaviour is done until all nodes are explored. 
  * 
- * Warning, this behaviour does not save the content of visited nodes, only the topology.
- * Warning, the sub-behaviour ShareMap periodically share the whole map
- * </pre>
- * @author hc
- *
+ * Note: This behaviour does not save the content of visited nodes, only the topology.
+ * Note: The sub-behaviour ShareMap periodically shares the whole map.
+ * 
+ * @author Tian Huang, Zhengqing Lin
  */
 public class ExploreBehaviour extends SimpleBehaviour {
 
 	private static final long serialVersionUID = 8567689731496787661L;
 
-    private boolean explorefinished = false;
+    private boolean explorefinished = false; // Flag to check if exploration is finished
     private int queryRefCount = 0;  // Counter for the number of queries sent
 
-    private ShareMapBehaviour shareMapBehaviour;
-    private MergeMapBehaviour mergeMapBehaviour;
+    private ShareMapBehaviour shareMapBehaviour; // Behaviour to share map
+    private MergeMapBehaviour mergeMapBehaviour; // Behaviour to merge map
 
     /**
      * 
@@ -82,16 +79,6 @@ public class ExploreBehaviour extends SimpleBehaviour {
              * Just added here to let you see what the agent is doing, otherwise he will be too quick
              */
             requestMapInfo();
-            // try {
-            //     // ((SkilledChaseAgent)this.myAgent).setshouldpause(true);
-            //     this.myAgent.doWait(1000);
-            //     // Thread.sleep(1000);
-            //     // ((SkilledChaseAgent)this.myAgent).setshouldpause(false);
-            //     System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+"WAITED FOR 1s - Position: "+myPosition);
-            // } catch (Exception e) {
-            //     e.printStackTrace();
-            //     System.out.println(LocalDateTime.now()+ this.myAgent.getLocalName()+" - Error in Wait");
-            // }
             //1) remove the current node from openlist and add it to closedNodes.
             thisAgent.getMapManager().addNode(myPosition.getLocationId(), MapAttribute.closed);
 

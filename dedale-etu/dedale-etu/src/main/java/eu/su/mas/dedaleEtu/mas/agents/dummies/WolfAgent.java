@@ -5,7 +5,6 @@ import java.util.List;
 
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedale.mas.agent.behaviours.platformManagment.*;
-import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.RespondPositionBehaviour;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.exploBehaviors.ExploreBehaviour;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapManager;
 import javafx.util.Pair;
@@ -48,7 +47,6 @@ public class WolfAgent extends AbstractDedaleAgent {
 	private String targetNode;
 	private String nextNode;
 	private String blockUnknownPos;
-	private boolean disband = false;
 	private boolean verifyGolem = false;
 	private List<String> verify_pos_agents;
 
@@ -250,14 +248,6 @@ public class WolfAgent extends AbstractDedaleAgent {
 
 	public String getblockUnknownPos() {
 		return blockUnknownPos;
-	}
-
-	public void setDisband(boolean disband) {
-		this.disband = disband;
-	}
-
-	public boolean isDisband() {
-		return disband;
 	}
 
 	public void setVerifyGolem(boolean verifyGolem) {

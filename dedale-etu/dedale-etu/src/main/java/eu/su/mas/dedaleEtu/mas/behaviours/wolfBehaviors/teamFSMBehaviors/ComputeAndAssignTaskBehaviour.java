@@ -26,27 +26,6 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         System.out.println(this.myAgent.getLocalName() + " - ComputeAndAssignTaskBehaviour");
-        if (wolfAgent.isDisband()) {
-            System.out.println(this.myAgent.getLocalName() + " - Disbanding");
-            if (wolfAgent.getMapManager().getMyMap().hasGolemNodeOnMap()){
-                System.out.println(this.myAgent.getLocalName() + " - Disbanding with golem");
-                Map<String, Pair<String, String>> agentTargetNodes = wolfAgent.getMapManager().computeTargetAndNextNodeForAgent();
-                Pair<String, String> myTargetAndPriority = agentTargetNodes.get(wolfAgent.getMyPositionID());                
-                if (myTargetAndPriority != null) {
-                    wolfAgent.setTargetAndNextNode(myTargetAndPriority);
-                } 
-                wolfAgent.setDisband(false);
-                return;
-            }
-            String nextNode = wolfAgent.getNextNode();
-            if (nextNode == null) { // cant be farer
-                wolfAgent.setTargetAndNextNode(null);
-                wolfAgent.setDisband(false);
-                return;
-            }
-            wolfAgent.setNextNode(nextNode);
-            return;
-        }
         if (!wolfAgent.hasChildren() && wolfAgent.getTargetNode() != null) {
             System.out.println(this.myAgent.getLocalName() + " - I'm alone and I have a target");
             List<String> path = wolfAgent.getMapManager().getMyMap().getShortestPath(wolfAgent.getMyPositionID(), wolfAgent.getTargetNode());
@@ -75,10 +54,9 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
             return;
         }
         System.out.println(this.myAgent.getLocalName() + " - I send mission to children" + wolfAgent.getChildren().toString());
-            // 步骤3: 把剩下的Map发给自己的孩子们
         for (String child : wolfAgent.getChildren()) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.setProtocol("Task-Distribution-Protocol"); // 设置协议
+            msg.setProtocol("Task-Distribution-Protocol"); 
             msg.addReceiver(new AID(child, AID.ISLOCALNAME));
             msg.setSender(this.myAgent.getAID());
             try {

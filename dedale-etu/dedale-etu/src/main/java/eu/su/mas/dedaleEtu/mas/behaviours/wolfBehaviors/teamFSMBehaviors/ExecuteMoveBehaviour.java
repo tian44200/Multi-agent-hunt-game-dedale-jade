@@ -4,7 +4,6 @@ import eu.su.mas.dedale.env.gs.gsLocation;
 import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import jade.core.behaviours.OneShotBehaviour;
-import javafx.util.Pair;
 
 public class ExecuteMoveBehaviour extends OneShotBehaviour {
     private static final long serialVersionUID = 1L;
@@ -24,10 +23,6 @@ public class ExecuteMoveBehaviour extends OneShotBehaviour {
             if (nextNode.equals("block")) {
                 onEndValue = 1;
                 System.out.println(this.myAgent.getLocalName() + " - I block golem.");
-                return;
-            }
-            if (nextNode.equals("disband")) {
-                System.out.println(this.myAgent.getLocalName() + " - I'm disbaned from the team.");
                 return;
             }
             if (nextNode.equals(wolfAgent.getMyPositionID())) {
