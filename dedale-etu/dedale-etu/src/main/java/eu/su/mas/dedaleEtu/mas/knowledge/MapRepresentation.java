@@ -206,6 +206,7 @@ public class MapRepresentation implements Serializable {
 		}
 		return shortestPath;
 	}
+
 	public List<String> getShortestPathToClosestOpenNode(String myPosition) {
 		//1) Get all openNodes
 		List<String> opennodes=getOpenNodes();
@@ -221,7 +222,6 @@ public class MapRepresentation implements Serializable {
 
 		return getShortestPath(myPosition,closest.get().getLeft());
 	}
-
 	
 
 	public void setMaxHashChef() {
