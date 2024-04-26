@@ -36,9 +36,8 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
             MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
             MessageTemplate.MatchProtocol("ConnectionRequest")
         );
-
+        this.myAgent.doWait(100);
         // Wait for a connection request
-        this.myAgent.doWait(50);
         long currentTime = System.currentTimeMillis();
         ACLMessage request = myAgent.receive(mt);
 
@@ -48,7 +47,7 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
             if (timestampStr != null) {
                 long timestamp = Long.parseLong(timestampStr);
                 // Check if the timestamp is within 50 milliseconds
-                if (currentTime - timestamp <= 50) {
+                if (currentTime - timestamp <= 100) {
                     // Print a message indicating that a connection request was received
                     System.out.println(myAgent.getLocalName() + " - Received connection request from " + request.getSender().getLocalName() + " within 50 ms.");
 
@@ -83,7 +82,7 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
             MessageTemplate.MatchPerformative(ACLMessage.CONFIRM),
             MessageTemplate.MatchProtocol("ConnectionConfirm")
         );
-        long endTime = System.currentTimeMillis() + 50; 
+        long endTime = System.currentTimeMillis() + 100; 
         System.out.println(System.currentTimeMillis() + myAgent.getLocalName() + " - Waiting for connection confirm to" + endTime);
         while (System.currentTimeMillis() < endTime) {
             ACLMessage confirm = myAgent.receive(mtConfirm);

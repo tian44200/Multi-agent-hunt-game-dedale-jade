@@ -33,6 +33,40 @@
   "lockPickingExpertise":1
   },
   { 
+  "agentType":"agentExplo",
+  "agentName": "Wolf4",
+  "communicationRange": 3,
+  "initialLocation": "free",
+  "backPackCapacityGold": -1,
+  "backPackCapacityDiamond":-1, 
+  "detectionRadius": 0,
+  "strengthExpertise": 1,
+  "lockPickingExpertise":1
+  },
+  { 
+    "agentType":"agentExplo",
+    "agentName": "Wolf5",
+    "communicationRange": 2,
+    "initialLocation": "free",
+    "backPackCapacityGold": -1,
+    "backPackCapacityDiamond":-1, 
+    "detectionRadius": 0,
+    "strengthExpertise": 1,
+    "lockPickingExpertise":1
+    },
+  
+  { 
+    "agentType":"agentExplo",
+    "agentName": "Wolf6",
+    "communicationRange": 3,
+    "initialLocation": "free",
+    "backPackCapacityGold": -1,
+    "backPackCapacityDiamond":-1, 
+    "detectionRadius": 0,
+    "strengthExpertise": 1,
+    "lockPickingExpertise":1
+    },
+  { 
   "agentType":"wumpus",
   "agentName": "G1",
   "communicationRange": 1,
@@ -43,6 +77,17 @@
   "strengthExpertise": 1,
   "lockPickingExpertise":1
   },
+  { 
+    "agentType":"wumpus",
+    "agentName": "G2",
+    "communicationRange": 3,
+    "initialLocation": "free",
+    "backPackCapacityGold": -1,
+    "backPackCapacityDiamond":-1, 
+    "detectionRadius": 1,
+    "strengthExpertise": 1,
+    "lockPickingExpertise":1
+    },
   { 
   "agentType":"HumanControlled",
   "agentName": "ImHere",

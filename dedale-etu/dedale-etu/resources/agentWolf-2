@@ -2,5 +2,9 @@ mapname:map2018MultiTypes
 agentExplo:1stAgent:4:free:-1:-1:0:1:1
 agentExplo:2ndAgent:3:free:-1:-1:0:1:1
 agentExplo:3ndAgent:2:free:-1:-1:0:1:1
+agentExplo:4ndAgent:3:free:-1:-1:0:1:1
+agentExplo:5ndAgent:2:free:-1:-1:0:1:1
+agentExplo:6ndAgent:3:free:-1:-1:0:1:1
 wumpus:Golem:1:free:-1:-1:2:1:1
+wumpus:Golem:3:free:-1:-1:2:1:1
 HumanControlled:ImHere:0:free:-1:-1:0:1:1

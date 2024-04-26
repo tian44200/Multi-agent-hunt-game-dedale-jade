@@ -37,7 +37,7 @@ public class ShareMapBehaviour extends CyclicBehaviour {
     @Override
     public void action() {
         // Log the start of the action
-        System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Checking for QUERY-REF-TOPO messages");
+        // System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Checking for QUERY-REF-TOPO messages");
 
         // Create a message template for QUERY-REF-TOPO messages
         MessageTemplate mt = MessageTemplate.and(
@@ -48,39 +48,51 @@ public class ShareMapBehaviour extends CyclicBehaviour {
         // Receive the message
         ACLMessage msg = myAgent.receive(mt);
         if (msg != null && ((WolfAgent)myAgent).getMapManager()!=null) {
-            // Increment the message counter and log the message receipt
-            messageCount++;
-            System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Received QUERY-REF-TOPO message #" + messageCount + " from " + msg.getSender().getLocalName());
-            System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Received QUERY-REF-TOPO message content: " + msg.getContent() + " from " + msg.getSender().getLocalName());
-
-            // Get the sender's AID
-            AID senderAID = msg.getSender();
+            if (msg != null && ((WolfAgent)myAgent).getMapManager()!=null) {
+                // Get the timestamp from the message
+                String timestampStr = msg.getUserDefinedParameter("timestamp");
+                if (timestampStr != null) {
+                    long messageTimestamp = Long.parseLong(timestampStr);
+                    long currentTimestamp = System.currentTimeMillis();
             
-            // Create a reply message
-            ACLMessage reply = new ACLMessage(ACLMessage.INFORM);
-            reply.setProtocol("SHARE-TOPO");
-            reply.setSender(this.myAgent.getAID());
-            reply.addReceiver(senderAID);
-            try {
-                // Log the map sharing
-                System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Sharing map to " + senderAID.getLocalName());
+                    // Check if the timestamp is not more than 100ms old
+                    if (currentTimestamp - messageTimestamp <= 100) {
+                        // Increment the message counter and log the message receipt
+                        messageCount++;
+                        System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Received QUERY-REF-TOPO message #" + messageCount + " from " + msg.getSender().getLocalName());
+                        System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Received QUERY-REF-TOPO message content: " + msg.getContent() + " from " + msg.getSender().getLocalName());
 
-                // Get the subgraph for the agent and set it as the content of the reply
-                SerializableSimpleGraph<String, MapAttribute> sg = ((WolfAgent)myAgent).getMapManager().getSerialSubGraphForAgent(senderAID.getLocalName());
-                if (sg!=null){
-                    reply.setContentObject(sg);
-                    ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
+                        // Get the sender's AID
+                        AID senderAID = msg.getSender();
+                        
+                        // Create a reply message
+                        ACLMessage reply = new ACLMessage(ACLMessage.INFORM);
+                        reply.setProtocol("SHARE-TOPO");
+                        reply.setSender(this.myAgent.getAID());
+                        reply.addReceiver(senderAID);
+                        try {
+                            // Log the map sharing
+                            System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - Sharing map to " + senderAID.getLocalName());
+
+                            // Get the subgraph for the agent and set it as the content of the reply
+                            SerializableSimpleGraph<String, MapAttribute> sg = ((WolfAgent)myAgent).getMapManager().getSerialSubGraphForAgent(senderAID.getLocalName());
+                            if (sg!=null){
+                                reply.setContentObject(sg);
+                                ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
+                            }
+                            else{
+                                // Log if there is no map to share
+                                System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - sg is null, no map to share");
+                            }
+                        } catch (IOException e) {
+                            // Handle the exception and set the reply to FAILURE
+                            e.printStackTrace();
+                            reply.setPerformative(ACLMessage.FAILURE);
+                            reply.setContent("Error sharing map");
+                        }
+                    }
                 }
-                else{
-                    // Log if there is no map to share
-                    System.out.println(LocalDateTime.now() + " - " + myAgent.getLocalName() + " - sg is null, no map to share");
-                }
-            } catch (IOException e) {
-                // Handle the exception and set the reply to FAILURE
-                e.printStackTrace();
-                reply.setPerformative(ACLMessage.FAILURE);
-                reply.setContent("Error sharing map");
-            }
+                    
             
         } else {
             // Log if no QUERY-REF-TOPO message was received and block the behaviour
@@ -88,4 +100,4 @@ public class ShareMapBehaviour extends CyclicBehaviour {
             block();
         }
     }
-}
+}}

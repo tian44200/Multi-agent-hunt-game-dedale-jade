@@ -6,8 +6,11 @@ import jade.lang.acl.MessageTemplate;
 import javafx.util.Pair;
 
 import java.util.Map;
+import java.util.Set;
 
+import eu.su.mas.dedale.mas.AbstractDedaleAgent;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
+import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 
 
 /**
@@ -56,18 +59,39 @@ public class WaitMissionBehaviour extends OneShotBehaviour {
         while (System.currentTimeMillis() < endTime && !received) {
             ACLMessage msg = myAgent.receive(mt);
             if (msg != null && msg.getSender().getLocalName().equals(wolfAgent.getParent())) {
-                received = true;
-                try {
-                    // Extract the mission from the message
-                    Map<String, Pair<String, String>> agentTargets = (Map<String, Pair<String, String>>) msg.getContentObject();
-                    Pair<String, String> myTargetAndPriority = agentTargets.remove(wolfAgent.getMyPositionID());
-                    wolfAgent.setTargetAndNextNode(myTargetAndPriority);
-
-                    // Print a message indicating that the agent received a mission
-                    System.out.println(myAgent.getLocalName() + " - Received mission from " + msg.getSender().getLocalName());
-                } catch (Exception e) {
-                    e.printStackTrace();
+                String timestampStr = msg.getUserDefinedParameter("timestamp");
+                if (timestampStr != null) {
+                    long messageTimestamp = Long.parseLong(timestampStr);
+                    long currentTimestamp = System.currentTimeMillis();
+            
+                    // Check if the timestamp is not more than 1000ms old
+                    if (currentTimestamp - messageTimestamp <= 1000) {
+                        // The rest of your code...
+                        received = true;
+                        try {
+                            // Extract the mission from the message
+                            Map<String, Pair<String, String>> agentTargets = (Map<String, Pair<String, String>>) msg.getContentObject();
+                            Pair<String, String> myTargetAndPriority = agentTargets.get(wolfAgent.getMyPositionID());
+                            wolfAgent.setTargetAndNextNode(myTargetAndPriority);
+                            if (wolfAgent.getNextNode() == "block"){
+                            wolfAgent.getMapManager().getObservationMap().clearMap();
+                            Set<String> block_agents = agentTargets.keySet();
+                            for (String agent : block_agents){
+                                if (agentTargets.get(agent).getValue().equals("block")){
+                                    wolfAgent.getMapManager().getObservationMap().addNode(agent, MapAttribute.block);
+                                }
+                            }
                 }
+                            // Print a message indicating that the agent received a mission
+                            System.out.println(myAgent.getLocalName() + " - Received mission from " + msg.getSender().getLocalName());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println(((AbstractDedaleAgent)myAgent).getLocalName() + "Message timestamp is more than 1000ms old from" + msg.getSender().getLocalName());
+                    }
+                }
+                
             }
             if (!received) {
                 block(10); // If no message was received, block the agent for 10 milliseconds

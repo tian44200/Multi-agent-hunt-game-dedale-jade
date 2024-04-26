@@ -37,7 +37,7 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
             MessageTemplate.MatchProtocol("ConnectionResponse")
         );
 
-        long endTime = System.currentTimeMillis() + 55; // Set the end time to 55 milliseconds from now
+        long endTime = System.currentTimeMillis() + 100; // Set the end time to 55 milliseconds from now
         boolean received = false;
 
         // Wait for a connection response until the end time
@@ -83,7 +83,7 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
 
         // Print a message if no connection responses were received within 55 milliseconds
         if (!received) {
-            System.out.println(myAgent.getLocalName() + " - No connection responses received within 55 ms.");
+            System.out.println(myAgent.getLocalName() + " - No connection responses received within 100 ms.");
         }
     }
 }

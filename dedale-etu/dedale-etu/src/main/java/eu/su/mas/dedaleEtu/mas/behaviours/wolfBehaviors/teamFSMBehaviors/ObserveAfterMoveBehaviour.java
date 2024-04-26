@@ -37,6 +37,7 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
         if (myPosition != null) {
             wolfAgent.setMyPositionID(myPosition.getLocationId());
             wolfAgent.checkArriveTarget();
+            
             List<Couple<Location, List<Couple<Observation, Integer>>>> lobs = 
                 ((AbstractDedaleAgent) wolfAgent).observe(); //myPosition
 
@@ -44,23 +45,27 @@ public class ObserveAfterMoveBehaviour extends OneShotBehaviour {
             for (Couple<Location, List<Couple<Observation, Integer>>> obs : lobs) {
                 Location location = obs.getLeft();
                 boolean stenchDetected = false;
-
-                // Examine the observations at this location
-                for (Couple<Observation, Integer> detail : obs.getRight()) {
-                    if (detail.getLeft() == Observation.STENCH) {
-                        stenchDetected = true;
-                        // If stench is detected, check if the location is the current position
-                        if (location.equals(myPosition)) {
-                            // If it is, mark the node as having a stenchagent attribute
-                            wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stenchagent);
-                            break;
-                        } 
-                        if (location.getLocationId()==blockUnknownPos){
-                            break;
+                if (wolfAgent.get_disable_smell() == false){
+                    // Examine the observations at this location
+                    for (Couple<Observation, Integer> detail : obs.getRight()) {
+                        if (detail.getLeft() == Observation.STENCH) {
+                            stenchDetected = true;
+                            // If stench is detected, check if the location is the current position
+                            if (location.equals(myPosition)) {
+                                // If it is, mark the node as having a stenchagent attribute
+                                wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stenchagent);
+                                break;
+                            } 
+                            if (location.getLocationId()==blockUnknownPos){
+                                break;
+                            }
+                            wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stench);
+                            break; // Stench detected, no need to check further
                         }
-                        wolfAgent.getMapManager().getObservationMap().addNode(location.getLocationId(), MapAttribute.stench);
-                        break; // Stench detected, no need to check further
                     }
+                }
+                else{
+                    System.out.println(this.myAgent.getLocalName() + " - I have disabled the smell");
                 }
 
                 // If no stench is detected, check if the location is the current position

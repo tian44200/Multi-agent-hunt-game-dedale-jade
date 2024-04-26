@@ -51,7 +51,7 @@ public class MapRepresentation implements Serializable {
 	 */
 
 	public enum MapAttribute {	
-		agent,stenchagent,stench,open,closed,golem,blocker;
+		agent,stenchagent,stench,open,closed,golem,block;
 	}
 
 	private static final long serialVersionUID = -1333959882640838272L;
@@ -332,9 +332,6 @@ public class MapRepresentation implements Serializable {
 			// 获取节点的MapAttribute属性
 			String attributeStr = node.getAttribute("ui.class", String.class);
 			
-			if ("agent".equals(attributeStr) || "closed".equals(attributeStr)) {
-				return 0.0;
-			}
 	
 			if ("golem".equals(attributeStr)) {
 				score += Math.pow(0.5, depth);; // 如果节点是golem
@@ -381,7 +378,6 @@ public synchronized Map<String, Pair<String, String>> computeBlockPositionsForAg
 	if (golemNodes.isEmpty()) {
 		return null;
 	}
-	List<String> agents = getAgentAndStenchAgentNodes();
 	Map<String, Pair<String, String>> agentNodeMap = new HashMap<>();
 	List<String> golemNeighborNodes = getOnlyNeighborNodes(golemNodes);
 	boolean isGolemBlocked = true;
@@ -394,11 +390,6 @@ public synchronized Map<String, Pair<String, String>> computeBlockPositionsForAg
 		agentNodeMap.put(node, new Pair<>(golemNodes.get(0), "block"));
 	}
 	if (isGolemBlocked) {
-		for (String agent : agents) {
-			if (!agentNodeMap.containsKey(agent)) {
-				agentNodeMap.put(agent, new Pair<>(null, null));
-			}
-		}
 		return agentNodeMap;
 	} else {
 		return null;
@@ -417,7 +408,6 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 	if (hasStenchNode()) {
 		targetNodes = getStenchNodes();
 		System.out.println("Stench nodes: " + targetNodes); // Debug print
-
 		while (targetNodes.size() < agents.size()) {
 			targetNodes = addNeighborsToNodes(targetNodes);
 			System.out.println("Added neighbors to nodes: " + targetNodes); // Debug print
@@ -634,6 +624,10 @@ public boolean hasGolemNodeOnMap() {
 					String currentAttribute = (String) newnode.getAttribute("ui.class");
 					if (!(currentAttribute.equals(MapAttribute.agent.toString()) || currentAttribute.equals(MapAttribute.stenchagent.toString()))) {
 						if (!(currentAttribute.equals(MapAttribute.golem.toString()))) {
+							if ((currentAttribute.equals(MapAttribute.block.toString()))){
+								g.removeNode(newnode);
+								continue;
+							}
 							newnode.setAttribute("ui.class", n.getNodeContent().toString());
 					}
 				}
@@ -717,12 +711,16 @@ public boolean hasGolemNodeOnMap() {
 
 	public boolean hasStenchNode() {
 		return (this.g.nodes()
-				.filter(n -> n.getAttribute("ui.class")==MapAttribute.stench.toString())
+				.filter(n -> n.getAttribute("ui.class")==MapAttribute.stench.toString() || n.getAttribute("ui.class")==MapAttribute.stenchagent.toString())
 				.findAny()).isPresent();
 	}
 
 	public void clearMap() {
 		this.g.clear();
 		this.nbEdges = 0;
+	}
+
+	public synchronized boolean hasNode(String nodeID){
+		return this.g.getNode(nodeID) != null;
 	}
 }

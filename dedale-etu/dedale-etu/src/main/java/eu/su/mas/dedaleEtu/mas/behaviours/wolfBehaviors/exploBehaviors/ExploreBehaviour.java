@@ -15,6 +15,7 @@ import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation.MapAttribute;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapRepresentation;
 import eu.su.mas.dedaleEtu.mas.agents.dummies.WolfAgent;
 import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.HuntFSMBehaviour;
+import eu.su.mas.dedaleEtu.mas.behaviours.wolfBehaviors.ReplyDisableSmellBehaviour;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 import eu.su.mas.dedaleEtu.mas.knowledge.MapManager;   
@@ -98,12 +99,13 @@ public class ExploreBehaviour extends SimpleBehaviour {
             if (!thisAgent.getMapManager().getMyMap().hasOpenNode()){
                 this.explorefinished=true;
                 thisAgent.getMapManager().getMyMap().setExploreFinishedTrue();
-                this.myAgent.removeBehaviour(this.shareMapBehaviour);
+                // this.myAgent.removeBehaviour(this.shareMapBehaviour);
                 this.myAgent.removeBehaviour(this.mergeMapBehaviour);
                 thisAgent.setExplorefinished(true);
                 thisAgent.getMapManager().getMyMap().saveInitialGraph();
                 // this.myAgent.addBehaviour(new RespondPositionBehaviour(thisAgent));
                 this.myAgent.addBehaviour(new HuntFSMBehaviour(thisAgent));
+                this.myAgent.addBehaviour(new ReplyDisableSmellBehaviour(thisAgent));
                 //Explo finished
                 System.out.println(this.myAgent.getLocalName()+" - Exploration successufully done, behaviour removed.");
                 System.out.println(this.myAgent.getLocalName()+" - Map: "+thisAgent.getMapManager().getMyMap().toString());
@@ -152,6 +154,7 @@ public class ExploreBehaviour extends SimpleBehaviour {
         requestMsg.setProtocol("QUERY-REF-TOPO");
         requestMsg.setContent("Request Count: " + ++queryRefCount); // 
         requestMsg.setSender(this.myAgent.getAID());
+        requestMsg.addUserDefinedParameter("timestamp", String.valueOf(System.currentTimeMillis()));
         
         for (String agentName : ((WolfAgent)myAgent).getAgentNames()) {
             requestMsg.addReceiver(new AID(agentName, AID.ISLOCALNAME));

@@ -91,6 +91,9 @@ public class VerifyGolemPosBehaviour extends OneShotBehaviour {
                 confirm.setSender(this.myAgent.getAID());
                 ((AbstractDedaleAgent)myAgent).sendMessage(confirm);
                 response = myAgent.receive(mt);
+                if (this.wolfAgent.getMapManager().getMyMap().getGolemNodes().isEmpty()) {
+                    return;                
+                }
             } 
             block(10); // Block the agent for 10 milliseconds if no response was received
         }

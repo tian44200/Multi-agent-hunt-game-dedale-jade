@@ -49,6 +49,9 @@ public class WolfAgent extends AbstractDedaleAgent {
 	private String blockUnknownPos;
 	private boolean verifyGolem = false;
 	private List<String> verify_pos_agents;
+	private List<String> block_team_members;
+	private boolean disableSmell = false;
+	private int golemCount = 0;
 
 	/**
 	 * This method is automatically called when "agent".start() is executed.
@@ -264,5 +267,25 @@ public class WolfAgent extends AbstractDedaleAgent {
 
 	public void setVerify_pos_agents(List<String> verify_pos_agents) {
 		this.verify_pos_agents = verify_pos_agents;
+	}
+
+	public void set_block_team_members(List<String> block_team_members) {
+		this.block_team_members = block_team_members;
+	}
+	public void init_block_team_members() {
+		this.block_team_members = new ArrayList<>();
+	}
+	public void add_block_team_member(String block_team_member) {
+		this.block_team_members.add(block_team_member);
+	}
+	public List<String> get_block_team_members() {
+		return block_team_members;
+	}
+
+	public void set_disable_smell(){
+		this.disableSmell = true;
+	}
+	public boolean get_disable_smell(){
+		return this.disableSmell;
 	}
 }
