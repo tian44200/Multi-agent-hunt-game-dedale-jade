@@ -80,6 +80,10 @@ public class MapManager implements Serializable{
     public synchronized SerializableSimpleGraph<String, MapAttribute> getSerialSubGraphForAgent(String agentId) {
         // Prepare the subgraph to be shared
         System.out.println("Subgraphes to share to" + "agentID"+ agentId + ":  "+this.staticSubgrapheToShareForAgent.get(agentId).toString());
+        if (this.explorefinished){
+            System.out.println("agent explore finished send map");
+            return this.myMap.getSerializableGraph();
+        }
         SerializableSimpleGraph<String, MapAttribute> subgraphToShare = this.staticSubgrapheToShareForAgent.get(agentId);
         if (subgraphToShare == null || subgraphToShare.toString().equals("{}")) {
             return null; 

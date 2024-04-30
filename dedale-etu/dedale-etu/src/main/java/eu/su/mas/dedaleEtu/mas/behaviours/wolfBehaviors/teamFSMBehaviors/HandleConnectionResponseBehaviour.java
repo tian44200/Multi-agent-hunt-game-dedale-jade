@@ -64,6 +64,7 @@ public class HandleConnectionResponseBehaviour extends OneShotBehaviour {
                     confirm.setProtocol("ConnectionConfirm");
                     confirm.addReceiver(response.getSender());
                     confirm.setSender(this.myAgent.getAID());
+                    confirm.addUserDefinedParameter("timestamp", String.valueOf(System.currentTimeMillis()));
 
                     // Add a timestamp
                     ((AbstractDedaleAgent)myAgent).sendMessage(confirm);

@@ -65,7 +65,7 @@ public class WaitMissionBehaviour extends OneShotBehaviour {
                     long currentTimestamp = System.currentTimeMillis();
             
                     // Check if the timestamp is not more than 1000ms old
-                    if (currentTimestamp - messageTimestamp <= 1000) {
+                    if (currentTimestamp - messageTimestamp <= 500) {
                         // The rest of your code...
                         received = true;
                         try {
@@ -73,15 +73,19 @@ public class WaitMissionBehaviour extends OneShotBehaviour {
                             Map<String, Pair<String, String>> agentTargets = (Map<String, Pair<String, String>>) msg.getContentObject();
                             Pair<String, String> myTargetAndPriority = agentTargets.get(wolfAgent.getMyPositionID());
                             wolfAgent.setTargetAndNextNode(myTargetAndPriority);
-                            if (wolfAgent.getNextNode() == "block"){
-                            wolfAgent.getMapManager().getObservationMap().clearMap();
-                            Set<String> block_agents = agentTargets.keySet();
-                            for (String agent : block_agents){
-                                if (agentTargets.get(agent).getValue().equals("block")){
-                                    wolfAgent.getMapManager().getObservationMap().addNode(agent, MapAttribute.block);
-                                }
+                            String nextNode = wolfAgent.getNextNode();
+                            if (nextNode != null && nextNode.equals("block")){
+                                wolfAgent.getMapManager().getObservationMap().clearMap();
+                                Set<String> block_agents = agentTargets.keySet();
+                                System.out.println("Received message from " + msg.getSender().getLocalName() + "for blocking mission: " + block_agents.toString());
+                                for (String agent : block_agents){
+                                    if (agentTargets.get(agent).getValue().equals("block")){
+                                        wolfAgent.getMapManager().getObservationMap().addNode(agent, MapAttribute.block);
+                                        System.out.println("Blocking agent: " + agent);
+                                        System.out.println("Blocking agent's position: " + wolfAgent.getMapManager().getObservationMap().toString());
+                                    }
                             }
-                }
+                        }
                             // Print a message indicating that the agent received a mission
                             System.out.println(myAgent.getLocalName() + " - Received mission from " + msg.getSender().getLocalName());
                         } catch (Exception e) {

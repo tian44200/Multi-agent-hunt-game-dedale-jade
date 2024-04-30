@@ -33,6 +33,13 @@ public class ExecuteMoveBehaviour extends OneShotBehaviour {
                 System.out.println(this.myAgent.getLocalName() + " - I move to " + nextNode);
             } else {
                 wolfAgent.setblockUnknownPos(nextNode);
+                // if (wolfAgent.getSuspectPos() == null){
+                //     wolfAgent.setSuspectPos(nextNode);
+                //     wolfAgent.setblockUnknownPos(null);
+                // }else{
+                    
+                //     wolfAgent.setSuspectPos(null);
+                // }
                 System.out.println(this.myAgent.getLocalName() + " - I failed to move to " + nextNode);
             };
         } else {

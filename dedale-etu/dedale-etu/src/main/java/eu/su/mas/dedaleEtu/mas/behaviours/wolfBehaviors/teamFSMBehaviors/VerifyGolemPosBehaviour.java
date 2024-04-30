@@ -50,13 +50,14 @@ public class VerifyGolemPosBehaviour extends OneShotBehaviour {
 
         // Add a timestamp
         connRequest.addUserDefinedParameter("timestamp", String.valueOf(System.currentTimeMillis()));
+        connRequest.addUserDefinedParameter("golemVerif", "true");
         ((AbstractDedaleAgent)this.myAgent).sendMessage(connRequest);
         
         MessageTemplate mt = MessageTemplate.and(
             MessageTemplate.MatchPerformative(ACLMessage.INFORM),
             MessageTemplate.MatchProtocol("ConnectionResponse")
         );
-        long endTime = System.currentTimeMillis() + 200; // Set the end time to 200 milliseconds from now
+        long endTime = System.currentTimeMillis() + 250; // Set the end time to 200 milliseconds from now
         boolean received = false;
 
         // Wait for a response until the end time
@@ -89,6 +90,7 @@ public class VerifyGolemPosBehaviour extends OneShotBehaviour {
                 confirm.setProtocol("ConnectionConfirm");
                 confirm.addReceiver(response.getSender());
                 confirm.setSender(this.myAgent.getAID());
+                confirm.addUserDefinedParameter("timestamp", String.valueOf(System.currentTimeMillis()));
                 ((AbstractDedaleAgent)myAgent).sendMessage(confirm);
                 response = myAgent.receive(mt);
                 if (this.wolfAgent.getMapManager().getMyMap().getGolemNodes().isEmpty()) {

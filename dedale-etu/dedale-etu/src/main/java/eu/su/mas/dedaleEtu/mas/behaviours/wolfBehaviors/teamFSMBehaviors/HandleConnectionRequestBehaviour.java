@@ -36,18 +36,17 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
             MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
             MessageTemplate.MatchProtocol("ConnectionRequest")
         );
-        this.myAgent.doWait(100);
         // Wait for a connection request
+        myAgent.doWait(100);
         long currentTime = System.currentTimeMillis();
         ACLMessage request = myAgent.receive(mt);
-
         // Process all received connection requests
-        while (request != null ) {
+        while (request != null) {
             String timestampStr = request.getUserDefinedParameter("timestamp");
             if (timestampStr != null) {
                 long timestamp = Long.parseLong(timestampStr);
                 // Check if the timestamp is within 50 milliseconds
-                if (currentTime - timestamp <= 100) {
+                if (currentTime - timestamp <= 100 || (currentTime - timestamp <= 250 && request.getUserDefinedParameter("golemVerif") != null)) {
                     // Print a message indicating that a connection request was received
                     System.out.println(myAgent.getLocalName() + " - Received connection request from " + request.getSender().getLocalName() + " within 50 ms.");
 
@@ -64,7 +63,8 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
                     ((AbstractDedaleAgent)this.myAgent).sendMessage(reply);
                     received = true;
                     break;
-                } else {
+                }
+                else {
                     // Print a message indicating that an outdated connection request was received
                     System.out.println(myAgent.getLocalName() + " - Received outdated connection request from " + request.getSender().getLocalName());
                 }
@@ -87,12 +87,16 @@ public class HandleConnectionRequestBehaviour extends OneShotBehaviour {
         while (System.currentTimeMillis() < endTime) {
             ACLMessage confirm = myAgent.receive(mtConfirm);
             if (confirm != null) {
-                // Print a message indicating that a connection confirmation was received
-                System.out.println(myAgent.getLocalName() + " - Received connection confirm from " + confirm.getSender().getLocalName());
+                long timestamp = Long.parseLong(confirm.getUserDefinedParameter("timestamp"));
+                if (System.currentTimeMillis() - timestamp <= 100) {
+                        // Print a message indicating that a connection confirmation was received
+                    System.out.println(myAgent.getLocalName() + " - Received connection confirm from " + confirm.getSender().getLocalName());
 
-                // Set the sender of the confirmation as the parent of the agent
-                ((WolfAgent)this.myAgent).setParent(confirm.getSender().getLocalName());
-                return;
+                    // Set the sender of the confirmation as the parent of the agent
+                    ((WolfAgent)this.myAgent).setParent(confirm.getSender().getLocalName());
+                    return;
+                }
+                
             }
             block(3);
         }

@@ -47,11 +47,11 @@ public class WolfAgent extends AbstractDedaleAgent {
 	private String targetNode;
 	private String nextNode;
 	private String blockUnknownPos;
+	private String suspectPos;
 	private boolean verifyGolem = false;
 	private List<String> verify_pos_agents;
 	private List<String> block_team_members;
 	private boolean disableSmell = false;
-	private int golemCount = 0;
 
 	/**
 	 * This method is automatically called when "agent".start() is executed.
@@ -243,6 +243,14 @@ public class WolfAgent extends AbstractDedaleAgent {
 
 	public void setblockUnknownPos(String blockUnknownPos) {
 		this.blockUnknownPos = blockUnknownPos;
+	}
+
+	public void setSuspectPos(String suspectPos){
+		this.suspectPos = suspectPos;
+	}
+
+	public String getSuspectPos(){
+		return suspectPos;
 	}
 	
 	public void resetblockUnknownPos() {

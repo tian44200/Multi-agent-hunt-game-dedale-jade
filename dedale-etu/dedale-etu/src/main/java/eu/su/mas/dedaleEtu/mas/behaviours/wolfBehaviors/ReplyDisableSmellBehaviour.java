@@ -49,7 +49,7 @@ public class ReplyDisableSmellBehaviour extends CyclicBehaviour {
                     System.out.println(myAgent.getLocalName() + " - Received content object: " + sgReceived);
 
                     // Merge the received map with the agent's map
-                    ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
+                    // ((WolfAgent)this.myAgent).getMapManager().getMyMap().mergeMap(sgReceived);
                     
                 } catch (UnreadableException e) {
                     // Print an error message if the content object could not be read

@@ -44,7 +44,7 @@ public class HuntFSMBehaviour extends FSMBehaviour {
         registerState(new ComputeAndAssignTaskBehaviour(agent), COMPUTE_AND_ASSIGN_TASK_BEHAVIOUR);
 
         String WAIT_MISSION_BEHAVIOUR = "WaitMissionBehaviour";
-        registerState(new WaitMissionBehaviour(agent,1000), WAIT_MISSION_BEHAVIOUR);
+        registerState(new WaitMissionBehaviour(agent,500), WAIT_MISSION_BEHAVIOUR);
         
         // Executing move
         String EXECUTE_MOVE_BEHAVIOUR = "ExecuteMoveBehaviour";

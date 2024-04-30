@@ -75,7 +75,10 @@ public final class ConfigurationFile {
 	 */
 	//public static String INSTANCE_TOPOLOGY=null;
 	
-	public static String INSTANCE_TOPOLOGY="resources/topology/map2020-topologyExam1-graph.dgs";
+//	public static String INSTANCE_TOPOLOGY="resources/topology/map2020-topologyExam1-graph.dgs";
+	// public static String INSTANCE_TOPOLOGY="resources/topology/map2024-topologyExam1.dgs";
+	// public static String INSTANCE_TOPOLOGY="resources/topology/map2024-topologyExam2.dgs";
+	public static String INSTANCE_TOPOLOGY="resources/topology/map2024-topologyExam2-s.dgs";
 	//public static String INSTANCE_TOPOLOGY="resources/topology/HouatTopology";
 	// public static String INSTANCE_TOPOLOGY="resources/topology/map2018-topology-ica";
 	// public static String INSTANCE_TOPOLOGY="resources/topology/map2021-topologyExam1-tree.dgs";
@@ -155,7 +158,9 @@ public final class ConfigurationFile {
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExplo-2.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2";
 	// public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentExploCoop-2.json";
-	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/AgentWolf-2.json";
+//	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/AgentWolf-2.json";
+	// public static String INSTANCE_CONFIGURATION_ENTITIES="resources/hunt/map2024-1-entities.json";
+	public static String INSTANCE_CONFIGURATION_ENTITIES="resources/hunt/map2024-2-entities.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/treasureHunt/map2023-entities.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/treasureHunt/agentTankerCollect.json";
 	//public static String INSTANCE_CONFIGURATION_ENTITIES="resources/agentKeyboardControlled";

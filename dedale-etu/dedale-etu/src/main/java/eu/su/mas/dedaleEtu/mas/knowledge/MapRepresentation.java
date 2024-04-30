@@ -375,6 +375,8 @@ public synchronized boolean areGolemsBlocked() {
 public synchronized Map<String, Pair<String, String>> computeBlockPositionsForAgent() {
 	List<String> golemNodes = getGolemNodes();
 	System.out.println("Golem nodes: " + golemNodes); // Debug print
+	System.out.println("this g " + this.g.toString());
+	System.out.println("this g initial: " + this.g_initial.toString());
 	if (golemNodes.isEmpty()) {
 		return null;
 	}
@@ -403,6 +405,9 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 	}
 	List<String> agents = getAgentAndStenchAgentNodes();
 	System.out.println("Agents: " + agents); // Debug print
+	if (this.areAgentsSurroundedByStench(agents)){
+		return this.computeRandomNodesForAgents(agents);
+	}
 
 	List<String> targetNodes = new ArrayList<>();
 	if (hasStenchNode()) {
@@ -418,10 +423,8 @@ public synchronized Map<String, Pair<String, String>> computeTargetAndNextNodeFo
 			System.out.println("Neighbors of agent " + agent + ": " + neighbors); // Debug print
 
 			if (!neighbors.isEmpty()) {
-				int randomIndex = new Random().nextInt(neighbors.size());
-				String randomNeighbor = neighbors.get(randomIndex);
-				targetNodes.add(randomNeighbor);
-				System.out.println("Added random neighbor " + randomNeighbor + " to target nodes"); // Debug print
+				targetNodes.addAll(neighbors);
+				System.out.println("All " + targetNodes + " for target nodes"); // Debug print
 			}
 		}
 	}   
@@ -492,11 +495,24 @@ public boolean hasGolemNodeOnMap() {
 	Iterator<Node> iter = this.g.iterator();
 	while(iter.hasNext()){
 		Node node = iter.next();
-		if (node.getAttribute("MapAttribute").toString().equals(MapAttribute.golem.toString())) {
+		if (((String) node.getAttribute("ui.class")==MapAttribute.golem.toString())) {
 			return true;
 		}
 	}
 	return false;
+}
+
+public synchronized Map<String, Pair<String, String>> computeRandomNodesForAgents(List<String> agents){
+	Map<String, Pair<String, String>> agentNodeMap = new HashMap<>();
+	for (String agent : agents){
+		List<String> neighbors = getNeighborNodes(agent);
+		System.out.println("Neighbors of agent " + agent + ": " + neighbors); // Debug print
+		int randomIndex = new Random().nextInt(neighbors.size());
+		String randomNeighbor = neighbors.get(randomIndex);
+		System.out.println("Random neighbor for agent " + agent + ": " + randomNeighbor); // Debug print
+		agentNodeMap.put(agent, new Pair<>(randomNeighbor, randomNeighbor));
+	}
+	return agentNodeMap;
 }
 	/**
 	 * Before the migration we kill all non serializable components and store their data in a serializable form
@@ -592,6 +608,26 @@ public boolean hasGolemNodeOnMap() {
         this.g = Graphs.clone(this.g_initial);
     }
 
+	public int get_mapattribute_priority(String mapAttribute) {
+		if (mapAttribute.equals(MapAttribute.agent.toString())) {
+			return 0;
+		} else if (mapAttribute.equals(MapAttribute.stenchagent.toString())) {
+			return 0;
+		}else if (mapAttribute.equals(MapAttribute.golem.toString())) {
+			return 1;
+		}else if (mapAttribute.equals(MapAttribute.stench.toString())) {
+			return 2;
+		} else if (mapAttribute.equals(MapAttribute.open.toString())) {
+			return 3;
+		} else if (mapAttribute.equals(MapAttribute.closed.toString())) {
+			return 3;
+		}  else if (mapAttribute.equals(MapAttribute.block.toString())) {
+			return 0;
+		} else {
+			return 3;
+		}
+	}
+
 	public void mergeMap(SerializableSimpleGraph<String, MapAttribute> sgreceived) {
 		//System.out.println("You should decide what you want to save and how");
 		//System.out.println("We currently blindy add the topology");
@@ -622,14 +658,15 @@ public boolean hasGolemNodeOnMap() {
 					System.out.println("Explore finished for MapRepresentation, merge the variante node content.");
 					System.out.println("Node"+ n.toString()+ "Content "+ n.getNodeContent().toString());
 					String currentAttribute = (String) newnode.getAttribute("ui.class");
-					if (!(currentAttribute.equals(MapAttribute.agent.toString()) || currentAttribute.equals(MapAttribute.stenchagent.toString()))) {
-						if (!(currentAttribute.equals(MapAttribute.golem.toString()))) {
-							if ((currentAttribute.equals(MapAttribute.block.toString()))){
-								g.removeNode(newnode);
-								continue;
-							}
-							newnode.setAttribute("ui.class", n.getNodeContent().toString());
+					if (currentAttribute.equals("block") || n.getNodeContent().toString().equals("block")){
+						this.g.removeNode(newnode);
+						Node newnode_bis = this.g_initial.getNode(n.getNodeId());
+						if (newnode_bis != null){
+							this.g_initial.removeNode(newnode_bis);
+						}
 					}
+					else if (get_mapattribute_priority(n.getNodeContent().toString()) < get_mapattribute_priority(currentAttribute)) {
+						newnode.setAttribute("ui.class", n.getNodeContent().toString());
 				}
 			}
 		}
@@ -665,7 +702,7 @@ public boolean hasGolemNodeOnMap() {
 				diffMap.addNode(n.getNodeId());
 			} else {
 				newnode=this.g.getNode(n.getNodeId());
-				if (((String) newnode.getAttribute("ui.class"))==MapAttribute.closed.toString() || n.getNodeContent().toString()==MapAttribute.closed.toString()) {
+				if (((String) newnode.getAttribute("ui.class")).equals(MapAttribute.closed.toString()) || n.getNodeContent().toString().equals(MapAttribute.closed.toString())) {
 					newnode.setAttribute("ui.class",MapAttribute.closed.toString());
 				}
 			}
@@ -681,6 +718,8 @@ public boolean hasGolemNodeOnMap() {
 		// If diffMap contains any nodes, return it. Otherwise, return null.
 		return diffMap.getAllNodes().isEmpty() ? null : diffMap;
 	}
+
+
 
 
 	/**
@@ -722,5 +761,37 @@ public boolean hasGolemNodeOnMap() {
 
 	public synchronized boolean hasNode(String nodeID){
 		return this.g.getNode(nodeID) != null;
+	}
+
+	public synchronized List<String> getStenchAgentNodes() {
+		return this.g.nodes()
+				.filter(x -> x.getAttribute("ui.class").equals(MapAttribute.stenchagent.toString()))
+				.map(Node::getId)
+				.collect(Collectors.toList());
+	}
+
+	public synchronized boolean isAgentSurroundedByStench(String agentNode){
+		Node node = this.g.getNode(agentNode);
+		if (node != null){
+			List<String> neighbors = this.getNeighborsForNode(agentNode);
+			for (String neighborNodeID :neighbors) {
+				if (!this.g.getNode(neighborNodeID).getAttribute("ui.class").equals(MapAttribute.stench.toString()) && !this.g.getNode(neighborNodeID).getAttribute("ui.class").equals(MapAttribute.stenchagent.toString())){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public synchronized boolean areAgentsSurroundedByStench(List<String> agents) {
+		if (hasGolemNodeOnMap()){
+			return false;
+		}
+		for (String agentNode : agents) {
+			if (!isAgentSurroundedByStench(agentNode)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

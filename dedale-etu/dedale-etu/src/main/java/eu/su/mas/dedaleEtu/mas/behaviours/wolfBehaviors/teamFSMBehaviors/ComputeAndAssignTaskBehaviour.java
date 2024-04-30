@@ -28,6 +28,7 @@ public class ComputeAndAssignTaskBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         System.out.println(this.myAgent.getLocalName() + " - ComputeAndAssignTaskBehaviour");
+        wolfAgent.getMapManager().getMyMap().mergeMap(wolfAgent.getMapManager().getObservationMap().getSerializableGraph());
         if (!wolfAgent.hasChildren() && wolfAgent.getTargetNode() != null) {
             System.out.println(this.myAgent.getLocalName() + " - I'm alone and I have a target");
             if (wolfAgent.getMapManager().getMyMap().hasNode(wolfAgent.getTargetNode())){
