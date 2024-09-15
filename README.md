@@ -4,7 +4,7 @@ This project was completed during my first year of the Master’s program as par
 
 ## Project Overview
 
-This project is a multi-agent system implementation of the classic game "Hunt the Wumpus" (Gregory Yob, 1972). In this extended version, developed using the **JADE** platform and the **Dedale** environment, cooperative agents must explore an unknown environment, collect treasures, and capture Golems. Agents work together to build a complete map of the environment while avoiding obstacles and strategically cornering Golems.
+This project is a multi-agent system implementation of the classic game "Hunt the Wumpus" (Gregory Yob, 1972). In this extended version, developed using the **JADE** platform and the **Dedale** environment, cooperative agents must explore an unknown environment and capture Golems. Agents work together to build a complete map of the environment while avoiding obstacles and strategically cornering Golems.
 
 The project was divided into two phases:
 1. **Exploration Phase**: Agents explore the map, share partial maps, and aim to build a complete map collaboratively.
