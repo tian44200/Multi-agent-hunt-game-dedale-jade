@@ -20,12 +20,12 @@ public class RequestConnectionBehaviour extends OneShotBehaviour {
         connRequest.setProtocol("ConnectionRequest");
         connRequest.setSender(this.myAgent.getAID());
 
-        // 获取除了自己以外的所有代理的名称，并添加为接收者
+        // get all agent name and add as receivers
         for (String agentName : ((WolfAgent)myAgent).getAgentNames()) {
             connRequest.addReceiver(new AID(agentName, AID.ISLOCALNAME));
         }
 
-        // 添加时间戳
+        // add timestamp
         connRequest.addUserDefinedParameter("timestamp", String.valueOf(System.currentTimeMillis()));
         ((AbstractDedaleAgent)this.myAgent).sendMessage(connRequest);
 
