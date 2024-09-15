@@ -1,6 +1,6 @@
 # Hunt The Wumpus - Multi-Agent System
 
-This project was completed during my first year of the Master’s program as part of the FoSyMa (Fundamentals of Multi-Agent Systems) course at Sorbonne Université, and was presented in April 2024.
+This project was completed during my first year of the Master’s program as part of the FoSyMa (Fundamentals of Multi-Agent Systems) course at Sorbonne Université in France, and was presented in April 2024.
 
 ## Project Overview
 
@@ -59,19 +59,36 @@ For setting up Maven and Dedale, follow the instructions provided here:
 
 ## Agent Architecture
 
-### Wolf Agent
-The project uses a single type of agent, **Wolf**, which functions cooperatively with other agents. It is implemented in the file `WolfAgent.java` located at `dedale-etu/dedale-etu/src/main/java/eu/su/mas/dedaleEtu/mas/agents/dummies/WolfAgent.java`. The Wolf agent consists of several behaviors, all of which are implemented in the folder `wolfBehaviors` located at `dedale-etu/dedale-etu/src/main/java/eu/su/mas/dedaleEtu/mas/behaviours/wolfBehaviors`.
+### Wolf Agent and Behavior Management
 
-The key behaviors include:
-- **ExploreBehavior**: Manages the exploration phase, where agents share partial maps and navigate the environment using Dijkstra's algorithm, supported by the `MapRepresentation` class.
-- **HuntFSMBehavior**: Manages the hunting phase, where agents cooperate to capture the Golems.
+The Wolf agent is the sole agent type used in this project, and its behavior management is divided into two main phases:
 
-### Key Behaviors
-1. **ShareMapBehavior**: Shares the agent's local map with others, utilizing the `MapManager` class.
-2. **MergeMapBehavior**: Merges received maps from other agents using the `MapManager`.
-3. **ComputeAndAssignTaskBehavior**: Coordinates the hunting tasks among agents.
-4. **ExecuteMoveBehavior**: Moves the agent based on assigned tasks.
-5. **BlockingGolemBehavior**: Blocks a Golem by positioning agents strategically.
+1. **Exploration Phase**: Managed by `ExploreBehaviour`, where agents share partial maps and plan routes using Dijkstra’s algorithm. 
+    - **ExploreBehaviour**: This behavior manages the exploration process until the agent runs out of unexplored nodes. During this phase, the agent:
+      - Uses `MapManager` to synchronize its local map with partial maps from other agents.
+      - Employs two cyclic behaviors:
+        - **ShareMapBehaviour**: Sends partial maps to other agents upon request.
+        - **MergeMapBehaviour**: Integrates map segments received from other agents.
+    - Each exploration step involves requesting maps from other agents, merging them, and calculating the next node using Dijkstra’s algorithm.
+    - If an agent encounters an obstacle, it re-plans by randomly selecting a neighboring node as the next move.
+
+2. **Hunting Phase**: Managed by `HuntFSMBehaviour`, which includes several finite state machine (FSM) behaviors for coordinating the hunting of Golems.
+    - The hunting phase involves forming teams, assigning tasks, and executing moves to block and capture Golems. Key behaviors include:
+      - **ObservationBehaviour**: Agents observe their surroundings and update their local map with detected Golems or obstacles.
+      - **HandleConnectionRequestBehaviour**: Handles connection requests from other agents.
+      - **RequestConnectionBehaviour**: Sends connection requests to form a team.
+      - **ComputeAndAssignTaskBehaviour**: The team leader computes and assigns tasks to team members based on the current map.
+      - **ExecuteMoveBehaviour**: Executes the assigned task, such as moving to a target node or blocking a Golem.
+
+### Workflow Overview
+
+Below are diagrams illustrating the transition between the exploration and hunting phases and the key behaviors involved:
+
+<img width="695" alt="Screenshot 2024-09-15 at 16 36 22" src="https://github.com/user-attachments/assets/f7a0febc-7e5a-4e60-aba7-41a9824357de">
+Figure 1: Transition from Phase 1 to Phase 2
+
+<img width="720" alt="Screenshot 2024-09-15 at 16 36 46" src="https://github.com/user-attachments/assets/a1c2a4c3-79c1-4521-8803-a8e9f637bcde">
+Figure 2: Phase 2: HuntFSMBehaviour for the hunting process
 
 ## Environment and Communication
 
