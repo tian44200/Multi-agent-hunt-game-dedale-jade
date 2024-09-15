@@ -85,9 +85,13 @@ The Wolf agent is the sole agent type used in this project, and its behavior man
 Below are diagrams illustrating the transition between the exploration and hunting phases and the key behaviors involved:
 
 <img width="695" alt="Screenshot 2024-09-15 at 16 36 22" src="https://github.com/user-attachments/assets/f7a0febc-7e5a-4e60-aba7-41a9824357de">
+
+
 Figure 1: Transition from Phase 1 to Phase 2
 
 <img width="720" alt="Screenshot 2024-09-15 at 16 36 46" src="https://github.com/user-attachments/assets/a1c2a4c3-79c1-4521-8803-a8e9f637bcde">
+
+
 Figure 2: Phase 2: HuntFSMBehaviour for the hunting process
 
 ## Environment and Communication
