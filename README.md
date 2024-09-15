@@ -87,6 +87,11 @@ Communication between agents is limited by a specific communication radius. Agen
 2. **Golem Blocking Optimization**: Agents sometimes use more resources than necessary to block a Golem. Optimizing the blocking positions could prevent resource wastage.
 3. **Asynchronous Issues**: The distributed coordination sometimes leads to misinterpretation of Golem positions. Improved synchronization methods could mitigate this risk&.
 
+## Some Results: Golems captured
+![5731726410597_ pic](https://github.com/user-attachments/assets/76fa5afe-e4d8-4c92-8d69-59c11a0b81f7)
+![5711726410586_ pic](https://github.com/user-attachments/assets/d8a4d9f8-b30b-4951-b111-62c88736dc8c)
+![5721726410591_ pic](https://github.com/user-attachments/assets/c44b0d9c-c89d-425a-a624-84c54cdb7a0a)
+
 ## Conclusion
 
 This project demonstrated the complexity of multi-agent cooperation and communication. Despite the challenges, the system functions effectively in the majority of cases, and there are clear avenues for future improvements.
