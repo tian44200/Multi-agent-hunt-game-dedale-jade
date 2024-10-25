@@ -1,6 +1,6 @@
 # Hunt The Wumpus - Multi-Agent System
 
-This project was completed during my first year of the Master’s program as part of the FoSyMa (Fundamentals of Multi-Agent Systems) course at Sorbonne Université in France, and was presented in April 2024.
+This project was completed during my first year of the Master’s program as part of the FoSyMa (Fundamentals of Multi-Agent Systems) course at Sorbonne Université in France, and it was presented in April 2024. However, this is still a draft version. I will release a finalized version later.
 
 ## Project Overview
 
