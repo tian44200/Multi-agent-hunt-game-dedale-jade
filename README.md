@@ -113,10 +113,5 @@ Communication between agents is limited by a specific communication radius. Agen
 ![5711726410586_ pic](https://github.com/user-attachments/assets/d8a4d9f8-b30b-4951-b111-62c88736dc8c)
 ![5721726410591_ pic](https://github.com/user-attachments/assets/c44b0d9c-c89d-425a-a624-84c54cdb7a0a)
 
-## Conclusion
-
-This project demonstrated the complexity of multi-agent cooperation and communication. Despite the challenges, the system functions effectively in the majority of cases, and there are clear avenues for future improvements.
-
-## Documentation
-
-For detailed information on the project, please contact thuang44@gmail.com
+## Updating..
+This project is still in draft mode, you might find some codes in comments.
